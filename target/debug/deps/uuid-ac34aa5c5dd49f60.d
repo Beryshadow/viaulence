@@ -1,0 +1,13 @@
+c:\Users\berys\rust\viaulence\target\debug\deps\uuid-ac34aa5c5dd49f60.rmeta: C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\lib.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\builder.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\error.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\parser.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\fmt.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\external\mod.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\macros.rs
+
+c:\Users\berys\rust\viaulence\target\debug\deps\libuuid-ac34aa5c5dd49f60.rlib: C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\lib.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\builder.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\error.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\parser.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\fmt.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\external\mod.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\macros.rs
+
+c:\Users\berys\rust\viaulence\target\debug\deps\uuid-ac34aa5c5dd49f60.d: C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\lib.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\builder.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\error.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\parser.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\fmt.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\external\mod.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\macros.rs
+
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\lib.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\builder.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\error.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\parser.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\fmt.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\external\mod.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\uuid-1.1.2\src\macros.rs:
