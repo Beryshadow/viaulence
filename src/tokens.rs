@@ -218,39 +218,39 @@ impl Piece {
         }
         self
     }
-    pub fn change_health(&mut self, health: i8) -> &mut Piece {
-        match self {
-            Piece::Scout(scout) => scout.health = health,
-            Piece::Tank(tank) => tank.health = health,
-            Piece::Soldier(soldier) => soldier.health = health,
-            Piece::Medic(medic) => medic.health = health,
-            Piece::Wall(wall) => wall.health = health,
-            _ => {}
-        }
-        self
-    }
-    pub fn get_health(&self) -> Option<i8> {
-        match self {
-            Piece::Scout(scout) => Some(scout.health),
-            Piece::Tank(tank) => Some(tank.health),
-            Piece::Soldier(soldier) => Some(soldier.health),
-            Piece::Medic(medic) => Some(medic.health),
-            Piece::Wall(wall) => Some(wall.health),
-            _ => None,
-        }
-    }
-    pub fn get_uuid(&self) -> Option<uuid::Uuid> {
-        match self {
-            Piece::Scout(scout) => Some(scout.uuid),
-            Piece::Tank(tank) => Some(tank.uuid),
-            Piece::Soldier(soldier) => Some(soldier.uuid),
-            Piece::Medic(medic) => Some(medic.uuid),
-            Piece::Wall(wall) => Some(wall.uuid),
-            Piece::Base(base) => Some(base.uuid),
-            Piece::GoldPot(gold_pot) => Some(gold_pot.uuid),
-            _ => None,
-        }
-    }
+    // pub fn change_health(&mut self, health: i8) -> &mut Piece {
+    //     match self {
+    //         Piece::Scout(scout) => scout.health = health,
+    //         Piece::Tank(tank) => tank.health = health,
+    //         Piece::Soldier(soldier) => soldier.health = health,
+    //         Piece::Medic(medic) => medic.health = health,
+    //         Piece::Wall(wall) => wall.health = health,
+    //         _ => {}
+    //     }
+    //     self
+    // }
+    // pub fn get_health(&self) -> Option<i8> {
+    //     match self {
+    //         Piece::Scout(scout) => Some(scout.health),
+    //         Piece::Tank(tank) => Some(tank.health),
+    //         Piece::Soldier(soldier) => Some(soldier.health),
+    //         Piece::Medic(medic) => Some(medic.health),
+    //         Piece::Wall(wall) => Some(wall.health),
+    //         _ => None,
+    //     }
+    // }
+    // pub fn get_uuid(&self) -> Option<uuid::Uuid> {
+    //     match self {
+    //         Piece::Scout(scout) => Some(scout.uuid),
+    //         Piece::Tank(tank) => Some(tank.uuid),
+    //         Piece::Soldier(soldier) => Some(soldier.uuid),
+    //         Piece::Medic(medic) => Some(medic.uuid),
+    //         Piece::Wall(wall) => Some(wall.uuid),
+    //         Piece::Base(base) => Some(base.uuid),
+    //         Piece::GoldPot(gold_pot) => Some(gold_pot.uuid),
+    //         _ => None,
+    //     }
+    // }
     pub fn get_moves(&self) -> Option<i8> {
         match self {
             Piece::Scout(scout) => Some(scout.movement),

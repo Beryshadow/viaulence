@@ -1,23 +1,32 @@
-use crate::tokens::Piece;
+use crate::{
+    movement::{CoordType, CoordType::*},
+    tokens::Piece,
+};
 use core::hash::Hash;
 use std::{collections::HashMap, fmt::Debug};
 
 #[derive(Debug, Clone)]
 pub struct IGrid {
     grid_pieces: HashMap<Coord, Piece>,
-    grid_size: Coord,
+    top_left: Coord,
+    bottom_right: Coord,
 }
 
 impl IGrid {
-    pub fn new(x: i32, y: i32) -> IGrid {
+    pub fn new() -> IGrid {
         IGrid {
             grid_pieces: HashMap::new(),
-            grid_size: Coord::from(x, y),
+            top_left: Coord::new(),
+            bottom_right: Coord::new(),
         }
     }
 
-    pub fn set_size(&mut self, size: Coord) {
-        self.grid_size = size;
+    pub fn from(top_left_coord: Coord, bottom_right_coord: Coord) -> IGrid {
+        IGrid {
+            grid_pieces: HashMap::new(),
+            top_left: top_left_coord,
+            bottom_right: bottom_right_coord,
+        }
     }
 
     pub fn add_piece(&mut self, piece: Piece, coord: Coord) {
@@ -53,8 +62,8 @@ impl IGrid {
         }
     }
 
-    pub fn is_valid(&self, coord: Coord) -> bool {
-        if coord.x > self.grid_size.x || coord.y > self.grid_size.y {
+    pub fn is_valid(&self, coord: &Coord) -> bool {
+        if !self.is_in_range(coord) {
             return false;
         } else if self.grid_pieces.contains_key(&coord) {
             match self.grid_pieces.get(&coord) {
@@ -73,9 +82,31 @@ impl IGrid {
         }
     }
 
-    pub fn get(&self, coord: Coord) -> Option<&Piece> {
-        self.grid_pieces.get(&coord)
+    fn is_in_range(&self, coord: &Coord) -> bool {
+        if coord.get_x() < self.top_left.get_x()
+            || coord.get_y() < self.top_left.get_y()
+            || coord.get_x() > self.bottom_right.get_x()
+            || coord.get_y() > self.bottom_right.get_y()
+        {
+            return false;
+        } else {
+            true
+        }
     }
+
+    pub fn type_of_slot(&self, coord: &Coord) -> CoordType {
+        if self.is_valid(coord) {
+            Available(*coord)
+        } else if self.is_in_range(coord) {
+            UnAvailable(*coord)
+        } else {
+            OutOfBounds(*coord)
+        }
+    }
+
+    // pub fn get(&self, coord: Coord) -> Option<&Piece> {
+    //     self.grid_pieces.get(&coord)
+    // }
 }
 
 #[derive(Debug, Clone, PartialEq, Copy, Hash, Eq)]
