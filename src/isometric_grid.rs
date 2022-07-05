@@ -128,12 +128,6 @@ impl Coord {
     pub fn get_y(&self) -> i32 {
         self.y
     }
-    pub fn set_x(&mut self, x: i32) {
-        self.x = x;
-    }
-    pub fn set_y(&mut self, y: i32) {
-        self.y = y;
-    }
     pub fn add_x(&mut self, x: i32) {
         self.x += x;
     }
@@ -145,8 +139,5 @@ impl Coord {
     }
     pub fn sub_y(&mut self, y: i32) {
         self.y -= y;
-    }
-    fn same_coords(&self, coord: &Coord) -> bool {
-        self.get_x() == coord.get_x() && self.get_y() == coord.get_y()
     }
 }
