@@ -1,12 +1,15 @@
-mod isometric_grid;
-mod movement;
-mod tokens;
+// use crate::pieces::movement::populate_tree;
+// use crate::pieces::tokens::Piece;
+// use crate::pieces::tokens::*;
+use grid::isometric_grid::{Coord, IGrid};
 
-use crate::{
-    isometric_grid::{Coord, IGrid},
-    movement::populate_tree,
+use crate::pieces::{
+    movement::*,
     tokens::{Piece, *},
 };
+
+mod grid;
+mod pieces;
 
 fn main() {
     let mut grid = IGrid::from(Coord::from(0, 0), Coord::from(20, 20));
@@ -23,14 +26,14 @@ fn main() {
     grid.add_piece(Piece::Empty, Coord::from(0, 0));
     grid.add_piece(Piece::Tank(Tank::new()), Coord::from(0, 0));
     let medic = Piece::Medic(Medic::new());
-    let medic2 = medic.clone();
+    let base = Piece::Base(Base::new());
     grid.add_piece(medic, Coord::from(9, 9));
     grid.add_piece(Piece::Base(Base::new()), Coord::from(0, 0));
     // grid.add_piece(Piece::Wall(Wall::new()), Coord::from(10, 9));
     // grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(8, 9));
     // grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(9, 8));
 
-    let tree = populate_tree(&Coord::from(9, 9), &medic2, &grid);
+    let tree = populate_tree(&Coord::from(9, 9), &base, &grid);
     // println!("{:#?}", tree);
     let bob = tree.get_path_to_coord(&mut Coord::from(7, 6));
     if let Ok(_) = bob {
@@ -38,6 +41,7 @@ fn main() {
         println!("");
         println!("bob {:#?}", bob);
     } else {
-        println!("not present");
+        println!("cant go there");
     }
+    // soldier.attack();
 }
