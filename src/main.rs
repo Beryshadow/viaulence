@@ -26,10 +26,18 @@ fn main() {
     let medic2 = medic.clone();
     grid.add_piece(medic, Coord::from(9, 9));
     grid.add_piece(Piece::Base(Base::new()), Coord::from(0, 0));
-    grid.add_piece(Piece::Wall(Wall::new()), Coord::from(10, 9));
-    grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(8, 9));
-    grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(9, 8));
+    // grid.add_piece(Piece::Wall(Wall::new()), Coord::from(10, 9));
+    // grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(8, 9));
+    // grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(9, 8));
 
     let tree = populate_tree(&Coord::from(9, 9), &medic2, &grid);
-    println!("{:#?}", tree);
+    // println!("{:#?}", tree);
+    let bob = tree.get_path_to_coord(&mut Coord::from(7, 6));
+    if let Ok(_) = bob {
+        println!("");
+        println!("");
+        println!("bob {:#?}", bob);
+    } else {
+        println!("not present");
+    }
 }

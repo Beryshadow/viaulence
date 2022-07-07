@@ -1,66 +1,17 @@
+use std::io::{Error, ErrorKind};
+
 use crate::movement::Slot::*;
 
 use crate::{
     isometric_grid::{Coord, IGrid},
     tokens::Piece,
 };
-
-// here is where we will check available moves, make a ternary tree with binary tree as branches, and then check if the move is valid
-// if it is valid we will have the leaf as a possible valid move, if not we will have a leaf with a specific value
-// we will also check if the tree has multiple leaf with the same value (excluding None) before adding it to the list of possible moves
 pub fn populate_tree(coord: &Coord, piece: &Piece, grid: &IGrid) -> ThreeProngedTree {
     let mut tree = ThreeProngedTree::from(Available(*coord));
     let depth = piece.get_moves().unwrap();
-    let initial_moves = AvailableMoves::from(coord);
     let mut previous = vec![*coord];
-    println!(
-        "tree.get_bottom_branches(); {:?}",
-        tree.get_bottom_branches() // TODO: this should work on an empty tree
-    );
-    tree.populate_first_layer(initial_moves, grid, &mut previous); // this is broken because it doesn't check if the move is valid
-
-    for oof in 0..depth {
-        println!("");
-        println!("{oof}");
-        println!(
-            "this is tree.get_bottom_branches lenght: {:#?}",
-            tree.get_bottom_branches().len()
-        );
-        println!("");
-        println!("{:?}", previous);
-        if tree.get_bottom_branches().len() == 0 {
-            break;
-        }
-        for small_tree in tree.get_bottom_branches() {
-            match small_tree {
-                TwoProngedTree {
-                    first: _,
-                    second: _,
-                    value: Available(_),
-                    parent_coord: _,
-                } => {
-                    let available_moves = AvailableMoves::from(&small_tree.get_coord());
-                    let coord_provenance = small_tree.get_coord();
-                    small_tree.populate_first_layer(
-                        available_moves,
-                        grid,
-                        &mut previous,
-                        coord_provenance,
-                    );
-                }
-                TwoProngedTree {
-                    first: _,
-                    second: _,
-                    value: Unchecked,
-                    parent_coord: _,
-                } => {
-                    // print error message
-                    eprintln!("error: this should not happen");
-                }
-                _ => {}
-            }
-        }
-    }
+    tree.populate_last_layer(grid, &mut previous, depth);
+    tree.set_list_of_children(previous);
     tree
 }
 
@@ -70,16 +21,61 @@ pub struct ThreeProngedTree {
     second: Slot<TwoProngedTree>,
     third: Slot<TwoProngedTree>,
     value: Slot<Coord>,
+    list_of_children: Vec<Coord>,
 }
 
 impl ThreeProngedTree {
     fn new() -> ThreeProngedTree {
+        //
         ThreeProngedTree {
             first: Unchecked,
             second: Unchecked,
             third: Unchecked,
             value: Unchecked,
+            list_of_children: Vec::new(),
         }
+    }
+    pub fn get_list_of_children(&self) -> &Vec<Coord> {
+        &self.list_of_children
+    }
+    fn set_list_of_children(&mut self, list: Vec<Coord>) {
+        self.list_of_children = list;
+    }
+    pub fn get_path_to_coord(&self, coord: &Coord) -> Result<Vec<&Coord>, Error> {
+        if !self.get_list_of_children().contains(coord) {
+            return Err(Error::new(
+                ErrorKind::NotFound,
+                "Coord not found in list of children",
+            ));
+        } else {
+            let mut vector = vec![];
+            let mut first_value = self.get_child_from_coord(&coord); // LII maybe make it a hash map instead of a vector?
+            loop {
+                let test = first_value.get_coord_ref();
+                let root = self.get_root();
+                vector.push(test);
+                let coord = first_value.get_parent_coord();
+                if root == coord {
+                    vector.push(root);
+                    break;
+                }
+                first_value = self.get_child_from_coord(coord);
+            }
+            Ok(vector)
+        }
+    }
+    fn get_child_from_coord(&self, coord: &Coord) -> &TwoProngedTree {
+        let mut value = self.first.get_ref().traverse_to_coord(coord);
+        if let None = value {
+            value = self.second.get_ref().traverse_to_coord(coord);
+        }
+        if let None = value {
+            value = self.third.get_ref().traverse_to_coord(coord);
+        }
+        return value.unwrap();
+    }
+    fn get_value(&self) -> &Slot<Coord> {
+        &self.value
     }
     fn from(coord: Slot<Coord>) -> ThreeProngedTree {
         ThreeProngedTree {
@@ -87,13 +83,38 @@ impl ThreeProngedTree {
             second: Unchecked,
             third: Unchecked,
             value: coord,
+            list_of_children: Vec::new(),
         }
     }
-    fn set_no(&mut self, tree: TwoProngedTree, no: i8) {
+    fn set_no_available(&mut self, tree: TwoProngedTree, no: i8) {
         match no {
             1 => self.first = Available(tree),
             2 => self.second = Available(tree),
             3 => self.third = Available(tree),
+            _ => panic!("Invalid no for three pronged tree"),
+        }
+    }
+    fn set_no_unavailable(&mut self, tree: TwoProngedTree, no: i8) {
+        match no {
+            1 => self.first = UnAvailable(tree),
+            2 => self.second = UnAvailable(tree),
+            3 => self.third = UnAvailable(tree),
+            _ => panic!("Invalid no for three pronged tree"),
+        }
+    }
+    fn set_no_blocked(&mut self, tree: TwoProngedTree, no: i8) {
+        match no {
+            1 => self.first = Blocked(tree),
+            2 => self.second = Blocked(tree),
+            3 => self.third = Blocked(tree),
+            _ => panic!("Invalid no for three pronged tree"),
+        }
+    }
+    fn set_no_unchecked(&mut self, no: i8) {
+        match no {
+            1 => self.first = Unchecked,
+            2 => self.second = Unchecked,
+            3 => self.third = Unchecked,
             _ => panic!("Invalid no for three pronged tree"),
         }
     }
@@ -108,66 +129,94 @@ impl ThreeProngedTree {
             counter += 1;
             match grid.type_of_slot(&coord) {
                 CoordType::Available(_) => {
-                    let tree = TwoProngedTree::from(Available(coord), self.get_root());
+                    let tree = TwoProngedTree::from(Available(coord), *self.get_root());
                     previous.push(coord);
-                    self.set_no(tree, counter);
+                    self.set_no_available(tree, counter);
                 }
                 CoordType::UnAvailable(_) => {
-                    let tree = TwoProngedTree::from(UnAvailable(coord), self.get_root());
+                    let tree = TwoProngedTree::from(UnAvailable(coord), *self.get_root());
                     previous.push(coord);
-                    self.set_no(tree, counter);
+                    self.set_no_unavailable(tree, counter);
                 }
                 CoordType::OutOfBounds(_) => {
-                    let tree = TwoProngedTree::from(Blocked, self.get_root());
+                    let tree = TwoProngedTree::from(Blocked(coord), *self.get_root());
                     previous.push(coord);
-                    self.set_no(tree, counter);
-                } // let mut tree = TwoProngedTree::from(Available(coord));
-                  // previous.push(coord);
-                  // let moves = AvailableMoves::from(&coord, grid);
-                  // tree.populate_available_moves(moves, grid, previous, coord);
-                  // self.set_no(tree, counter);
+                    //HACK this might bite you in the ass later its supposed to be unchecked but its blocked (not gonna work if you want grid expansion)
+                    self.set_no_unchecked(counter);
+                }
             }
         }
     }
-    fn get_branches(&mut self) -> Vec<&mut TwoProngedTree> {
+    fn get_available_branches(&mut self) -> Vec<&mut TwoProngedTree> {
         let mut layer = Vec::new();
-        if self.first.get_as_mut_ref().is_available() {
-            layer.push(self.first.get_as_mut_ref());
+        if let Available(ref mut tree) = self.first {
+            layer.push(tree);
         }
-        if self.second.get_as_mut_ref().is_available() {
-            layer.push(self.second.get_as_mut_ref());
+        if let Available(ref mut tree) = self.second {
+            layer.push(tree);
         }
-        if self.third.get_as_mut_ref().is_available() {
-            layer.push(self.third.get_as_mut_ref());
+        if let Available(ref mut tree) = self.third {
+            layer.push(tree);
         }
-        // layer.push(self.first.get_as_mut_ref());
-        // layer.push(self.second.get_as_mut_ref());
-        // layer.push(self.third.get_as_mut_ref());
         layer
     }
     fn get_bottom_branches(&mut self) -> Vec<&mut TwoProngedTree> {
         let mut branches = Vec::new();
-        // here we need to check if the tree is Unchecked Blocked Available or UnAvailable
-        // let what_is_self_get_branches = self.get_branches();
-        // println!(
-        //     "what_is_self_get_branches jaueduawiuuuawuyuawyeduawueduiawudheaw {:#?}",
-        //     what_is_self_get_branches
-        // );
-        for branchy in self.get_branches() {
-            for branch in branchy.get_bottom_branches() {
-                branches.push(branch);
+        for branchy in self.get_available_branches() {
+            if !branchy.is_blocked() {
+                for branch in branchy.get_bottom_branches() {
+                    branches.push(branch);
+                }
             }
         }
         branches
     }
 
-    fn get_root(&mut self) -> Coord {
-        *self.value.unwrap()
+    fn get_root(&self) -> &Coord {
+        self.value.get_ref()
+    }
+    fn populate_last_layer(&mut self, grid: &IGrid, previous: &mut Vec<Coord>, depth: i8) {
+        for current_depth in 0..depth {
+            println!("");
+            println!("current depth is {}", current_depth);
+            println!(
+                "lenght of bottom branches is {}",
+                self.get_bottom_branches().len()
+            );
+            println!("");
+            if self.get_bottom_branches().len() == 0 {
+                if current_depth != 0 {
+                    break;
+                } else {
+                    let root = self.get_root();
+                    self.populate_first_layer(AvailableMoves::from(&root), grid, previous);
+                    continue;
+                }
+            }
+            for small_tree in self.get_bottom_branches() {
+                if let TwoProngedTree {
+                    first: _,
+                    second: _,
+                    value: Available(_),
+                    parent_coord: _,
+                } = small_tree
+                {
+                    let available_moves = AvailableMoves::from(&small_tree.get_coord());
+                    let coord_provenance = small_tree.get_coord();
+                    small_tree.populate_first_layer(
+                        available_moves,
+                        grid,
+                        previous,
+                        coord_provenance,
+                    );
+                }
+            }
+        }
     }
 }
 
 #[derive(Debug, Clone)]
-struct TwoProngedTree {
+pub struct TwoProngedTree {
     first: Slot<Box<TwoProngedTree>>,
     second: Slot<Box<TwoProngedTree>>,
     value: Slot<Coord>,
@@ -191,10 +240,65 @@ impl TwoProngedTree {
             parent_coord: parent,
         }
     }
-    fn set_no(&mut self, tree: TwoProngedTree, no: i8) {
+    fn traverse_to_coord(&self, coord: &Coord) -> Option<&TwoProngedTree> {
+        //LII maybe could be shortened
+        let mut return_value = None;
+        if self.get_value() == coord {
+            return_value = Some(self);
+        } else {
+            match self.first {
+                Available(ref tree) => {
+                    if let Some(tree) = tree.traverse_to_coord(coord) {
+                        return_value = Some(tree);
+                    }
+                }
+                _ => {}
+            }
+            match self.second {
+                Available(ref tree) => {
+                    if let Some(tree) = tree.traverse_to_coord(coord) {
+                        return_value = Some(tree);
+                    }
+                }
+                _ => {}
+            }
+        }
+        return_value
+    }
+    fn set_no_available(&mut self, tree: TwoProngedTree, no: i8) {
         match no {
             1 => self.first = Available(Box::new(tree)),
             2 => self.second = Available(Box::new(tree)),
+            _ => panic!(
+                "Invalid no for TwoProngedTree wanted to add tree {:?}, with index {}",
+                tree, no
+            ),
+        }
+    }
+    fn set_no_unavailable(&mut self, tree: TwoProngedTree, no: i8) {
+        match no {
+            1 => self.first = UnAvailable(Box::new(tree)),
+            2 => self.second = UnAvailable(Box::new(tree)),
+            _ => panic!(
+                "Invalid no for TwoProngedTree wanted to add tree {:?}, with index {}",
+                tree, no
+            ),
+        }
+    }
+    fn set_no_blocked(&mut self, tree: TwoProngedTree, no: i8) {
+        match no {
+            1 => self.first = Blocked(Box::new(tree)),
+            2 => self.second = Blocked(Box::new(tree)),
+            _ => panic!(
+                "Invalid no for TwoProngedTree wanted to add tree {:?}, with index {}",
+                tree, no
+            ),
+        }
+    }
+    fn set_no_unchecked(&mut self, tree: TwoProngedTree, no: i8) {
+        match no {
+            1 => self.first = Unchecked,
+            2 => self.second = Unchecked,
             _ => panic!(
                 "Invalid no for TwoProngedTree wanted to add tree {:?}, with index {}",
                 tree, no
@@ -211,55 +315,43 @@ impl TwoProngedTree {
         let mut counter = 0;
         for coord in moves {
             counter += 1;
-            if coord == self.get_parent_coord() {
-                // println!("previous coord is the same as the current coord");
-                // println!("{:?}", coord);
+            if coord == *self.get_parent_coord() {
                 counter -= 1;
             } else if previous.contains(&coord) {
-                // println!("");
-                // println!("");
-                // println!("the tree provenance value is {:?}", coord_provenance);
-                // println!("the tree saved prov value is {:?}", self.get_parent_coord());
-                // println!("moves available for it are {:?}", moves);
-                // println!("");
-                // println!("");
-                // println!("the tree current root coords are {:?}", self.get_coord());
-                // println!("this coord is in the previous list");
-                // println!("checking for {:?}", coord);
-                // println!("blocked path is {coord_provenance:?}");
-                // println!("list of all cached{:?}", previous);
-                let tree = TwoProngedTree::from(Blocked, coord_provenance);
-                self.set_no(tree, counter);
+                let tree = TwoProngedTree::from(Blocked(coord), coord_provenance);
+                self.set_no_blocked(tree, counter);
             } else {
                 match grid.type_of_slot(&coord) {
                     CoordType::Available(_) => {
                         let tree = TwoProngedTree::from(Available(coord), coord_provenance);
                         previous.push(coord);
-                        self.set_no(tree, counter);
+                        self.set_no_available(tree, counter);
                     }
                     CoordType::UnAvailable(_) => {
-                        // will never happen since we will never iterate over unavailable slots
                         let tree = TwoProngedTree::from(UnAvailable(coord), coord_provenance);
                         previous.push(coord);
-                        self.set_no(tree, counter);
+                        self.set_no_unavailable(tree, counter);
                     }
                     CoordType::OutOfBounds(_) => {
                         let tree = TwoProngedTree::from(Unchecked, coord_provenance);
                         previous.push(coord);
-                        self.set_no(tree, counter);
+                        // HACK this is supposed to be unchecked, but it is blocked because it would break the bottom layer fn
+                        self.set_no_blocked(tree, counter);
                     }
                 }
-                // let mut tree = TwoProngedTree::from(Available(coord));
-                // previous.push(coord);
-                // tree.populate_available_moves(moves, grid, depth, previous, coord);
-                // self.set_no(tree, counter);
             }
         }
     }
     fn get_coord(&mut self) -> Coord {
         *self.value.unwrap()
     }
-    fn is_available(&mut self) -> bool {
+    fn get_coord_ref(&self) -> &Coord {
+        self.value.get_ref()
+    }
+    fn get_value(&self) -> &Coord {
+        self.value.get_ref()
+    }
+    fn is_available(&self) -> bool {
         match self.value {
             Available(_) => true,
             _ => false,
@@ -273,7 +365,7 @@ impl TwoProngedTree {
     }
     fn is_blocked(&mut self) -> bool {
         match self.value {
-            Blocked => true,
+            Blocked(_) => true,
             _ => false,
         }
     }
@@ -294,35 +386,30 @@ impl TwoProngedTree {
     }
     fn is_blocked_or_unavailable(&mut self) -> bool {
         match self.value {
-            Blocked => true,
+            Blocked(_) => true,
             UnAvailable(_) => true,
             _ => false,
         }
     }
     fn get_bottom_branches(&mut self) -> Vec<&mut TwoProngedTree> {
         let mut branches = Vec::new();
-        // only push if it is unchecked stop and return empty if its blocked or unavailable
-        if self.dosent_have_any_branches() {
-            // println!("returning this branch {:?}", self);
+        if self.dosent_have_any_branches() && !self.is_blocked_or_unavailable() {
             branches.push(self);
-            return branches; // over here lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quidem.
+            return branches;
         } else {
             let mut layer = Vec::new();
             layer.push(&mut **self.first.get_as_mut_ref());
             layer.push(&mut **self.second.get_as_mut_ref());
             for branch in layer {
-                if branch.is_blocked_or_unavailable() {
-                    branches.push(branch);
-                } else {
+                if !branch.is_blocked_or_unavailable() {
                     branches.append(&mut branch.get_bottom_branches());
                 }
             }
-            // println!("returning this bigger layer {:?}", branches);
             return branches;
         }
     }
-    fn get_parent_coord(&mut self) -> Coord {
-        self.parent_coord
+    fn get_parent_coord(&self) -> &Coord {
+        &self.parent_coord
     }
 }
 
@@ -342,21 +429,14 @@ impl AvailableMoves {
         }
     }
     fn from(coord: &Coord) -> AvailableMoves {
-        let mut one = Some(coord.clone());
-        let mut two = Some(coord.clone());
-        let mut three = Some(coord.clone());
-        if !coord.clone().get_y() % 2 == 0 {
-            if coord.clone().get_x() % 2 == 0 {
-                three.as_mut().unwrap().add_y(1) // if x is even and y is odd
-            } else {
-                three.as_mut().unwrap().sub_y(1) // if x is odd and y is odd
-            }
+        let mut one = Some(*coord);
+        let mut two = Some(*coord);
+        let mut three = Some(*coord);
+        if coord.get_y() % 2 == coord.get_x() % 2 {
+            // simplify this
+            three.as_mut().unwrap().sub_y(1) // if x is odd and y is odd or even even
         } else {
-            if coord.clone().get_x() % 2 == 0 {
-                three.as_mut().unwrap().sub_y(1) // if x is even and y is even
-            } else {
-                three.as_mut().unwrap().add_y(1); // if x is odd and y is even
-            }
+            three.as_mut().unwrap().add_y(1); // if x is odd and y is even
         }
         one.as_mut().unwrap().add_x(1);
         two.as_mut().unwrap().sub_x(1);
@@ -396,7 +476,6 @@ struct AvailableMovesIterator {
 impl Iterator for AvailableMovesIterator {
     type Item = Coord;
     fn next(&mut self) -> Option<Self::Item> {
-        // get the next value that is available skip the None and stop at 3
         while self.index < 3 {
             let coord = self.moves.move_(self.index);
             self.index += 1;
@@ -411,7 +490,7 @@ impl Iterator for AvailableMovesIterator {
 #[derive(Debug, Clone, Copy)]
 pub enum Slot<T> {
     Unchecked,
-    Blocked,
+    Blocked(T),
     Available(T),
     UnAvailable(T),
 }
@@ -420,7 +499,7 @@ impl<T> Slot<T> {
     fn unwrap(&mut self) -> &mut T {
         match self {
             Slot::Unchecked => panic!("Unchecked slot with the unwrap function"),
-            Slot::Blocked => panic!("Blocked slot with the unwrap function"),
+            Slot::Blocked(t) => t,
             Slot::Available(t) => t,
             Slot::UnAvailable(t) => t,
         }
@@ -428,7 +507,15 @@ impl<T> Slot<T> {
     fn get_as_mut_ref(&mut self) -> &mut T {
         match self {
             Slot::Unchecked => panic!("Unchecked slot with the get_as_mut_ref function"),
-            Slot::Blocked => panic!("Blocked slot with the get_as_mut_ref function"),
+            Slot::Blocked(t) => t,
+            Slot::Available(t) => t,
+            Slot::UnAvailable(t) => t,
+        }
+    }
+    fn get_ref(&self) -> &T {
+        match self {
+            Slot::Unchecked => panic!("Unchecked slot with the get_tree function"),
+            Slot::Blocked(t) => t,
             Slot::Available(t) => t,
             Slot::UnAvailable(t) => t,
         }
