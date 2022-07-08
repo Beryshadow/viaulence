@@ -4,12 +4,17 @@ use std::io::{Error, ErrorKind};
 
 use crate::{
     grid::isometric_grid::{Coord, IGrid},
-    pieces::{movement::Slot::*, tokens::Piece},
+    pieces::movement::Slot::*,
 };
 
-pub fn populate_tree(coord: &Coord, piece: &Piece, grid: &IGrid) -> ThreeProngedTree {
+use super::traits::Move;
+
+pub fn populate_tree<T>(coord: &Coord, movable: T, grid: &IGrid) -> ThreeProngedTree
+where
+    T: Move,
+{
     let mut tree = ThreeProngedTree::from(Available(*coord));
-    let depth = piece.get_moves().unwrap();
+    let depth = movable.get_moves().unwrap();
     let mut previous = vec![*coord];
     tree.populate_last_layer(grid, &mut previous, depth);
     tree.set_list_of_children(previous);

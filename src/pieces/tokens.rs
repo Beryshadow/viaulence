@@ -1,9 +1,17 @@
+use std::io::Error;
+
 use uuid::Uuid;
+
+use crate::grid::isometric_grid::{Coord, IGrid};
 
 use super::traits::*; // will be used to categorise pieces
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Empty {}
+
+/* LII this is all the pieces that can be placed on the grid
+we need to implement the appropriate traits for each piece
+and get rid of the Piece enum */
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Scout {
@@ -18,6 +26,8 @@ pub struct Scout {
     cost: i32,
 }
 
+// for example a scout can attack, move, cary gold, be placed, die
+
 impl Scout {
     pub fn new() -> Scout {
         Scout {
@@ -31,6 +41,15 @@ impl Scout {
             movement: 4,
             cost: 300,
         }
+    }
+}
+
+impl Move for Scout {
+    fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
+        unimplemented!();
+    }
+    fn get_moves(&self) -> Option<i8> {
+        Some(self.movement)
     }
 }
 
