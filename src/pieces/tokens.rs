@@ -4,18 +4,23 @@ use uuid::Uuid;
 
 use crate::grid::isometric_grid::{Coord, IGrid};
 
-use super::traits::*; // will be used to categorise pieces
+use super::{
+    movement::{in_range, not_blocked},
+    traits::{Attack, Attackable, Move},
+}; // will be used to categorise pieces
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Empty {}
 
 /* LII this is all the pieces that can be placed on the grid
 we need to implement the appropriate traits for each piece
-and get rid of the Piece enum */
+*/
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Scout {
+    coord: Coord,
     uuid: uuid::Uuid,
+    team: uuid::Uuid,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -29,9 +34,11 @@ pub struct Scout {
 // for example a scout can attack, move, cary gold, be placed, die
 
 impl Scout {
-    pub fn new() -> Scout {
+    pub fn new(team_uuid: Uuid) -> Scout {
         Scout {
+            coord: Coord::new(),
             uuid: Uuid::new_v4(),
+            team: team_uuid,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -42,6 +49,9 @@ impl Scout {
             cost: 300,
         }
     }
+    pub fn set_coords(&mut self, coord: Coord) {
+        self.coord = coord;
+    }
 }
 
 impl Move for Scout {
@@ -51,11 +61,39 @@ impl Move for Scout {
     fn get_moves(&self) -> Option<i8> {
         Some(self.movement)
     }
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn not_blocked(&self, grid: &IGrid) -> bool {
+        not_blocked(self, grid)
+    }
+}
+
+impl Attack for Scout {
+    fn attack(&self, attacked: &mut dyn Attackable, grid: &IGrid) -> Result<(), Error> {
+        // we get the pieces in range and check the attacked piece is not immune and is not the same team and is in range
+        Ok(())
+    }
+    fn can_attack(&self, grid: &IGrid) -> bool {
+        // check if any pieces are in range and are not immune and are not the same team
+        in_range(self, grid)
+    }
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn get_range(&self) -> i8 {
+        self.range
+    }
+    fn get_damage(&self) -> i8 {
+        self.attack
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Tank {
+    coord: Coord,
     uuid: uuid::Uuid,
+    team: uuid::Uuid,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -67,9 +105,11 @@ pub struct Tank {
 }
 
 impl Tank {
-    pub fn new() -> Tank {
+    pub fn new(team_uuid: Uuid) -> Tank {
         Tank {
+            coord: Coord::new(),
             uuid: Uuid::new_v4(),
+            team: team_uuid,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -82,9 +122,27 @@ impl Tank {
     }
 }
 
+impl Move for Tank {
+    fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
+        unimplemented!();
+    }
+    fn get_moves(&self) -> Option<i8> {
+        Some(self.movement)
+    }
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn not_blocked(&self, grid: &IGrid) -> bool {
+        //LII this will need to be changed apropriately for the tank
+        not_blocked(self, grid)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Soldier {
+    coord: Coord,
     uuid: uuid::Uuid,
+    team: uuid::Uuid,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -98,9 +156,11 @@ pub struct Soldier {
 }
 
 impl Soldier {
-    pub fn new() -> Soldier {
+    pub fn new(team_uuid: Uuid) -> Soldier {
         Soldier {
+            coord: Coord::new(),
             uuid: Uuid::new_v4(),
+            team: team_uuid,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -115,9 +175,26 @@ impl Soldier {
     }
 }
 
+impl Move for Soldier {
+    fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
+        unimplemented!();
+    }
+    fn get_moves(&self) -> Option<i8> {
+        Some(self.movement)
+    }
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn not_blocked(&self, grid: &IGrid) -> bool {
+        not_blocked(self, grid)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Medic {
+    coord: Coord,
     uuid: uuid::Uuid,
+    team: uuid::Uuid,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -127,9 +204,11 @@ pub struct Medic {
 }
 
 impl Medic {
-    pub fn new() -> Medic {
+    pub fn new(team_uuid: Uuid) -> Medic {
         Medic {
+            coord: Coord::new(),
             uuid: Uuid::new_v4(),
+            team: team_uuid,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -140,34 +219,52 @@ impl Medic {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Base {
-    uuid: uuid::Uuid,
-    immune: bool,
-}
-
-impl Base {
-    pub fn new() -> Base {
-        Base {
-            uuid: Uuid::new_v4(),
-            immune: true,
-        }
+impl Move for Medic {
+    fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
+        unimplemented!();
+    }
+    fn get_moves(&self) -> Option<i8> {
+        Some(self.movement)
+    }
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn not_blocked(&self, grid: &IGrid) -> bool {
+        not_blocked(self, grid)
     }
 }
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Wall {
     uuid: uuid::Uuid,
+    team: uuid::Uuid,
     immune: bool,
     health: i8,
 }
 
 impl Wall {
-    pub fn new() -> Wall {
+    pub fn new(team_uuid: Uuid) -> Wall {
         Wall {
             uuid: Uuid::new_v4(),
+            team: team_uuid,
             immune: false,
             health: 4,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Base {
+    uuid: uuid::Uuid,
+    team: uuid::Uuid,
+    immune: bool,
+}
+
+impl Base {
+    pub fn new(team_uuid: Uuid) -> Base {
+        Base {
+            uuid: Uuid::new_v4(),
+            team: team_uuid,
+            immune: true,
         }
     }
 }
@@ -279,6 +376,57 @@ impl Piece {
             Piece::Soldier(soldier) => Some(soldier.movement),
             Piece::Medic(medic) => Some(medic.movement),
             _ => None,
+        }
+    }
+    pub fn get_cost(&self) -> Option<i32> {
+        match self {
+            Piece::Scout(scout) => Some(scout.cost),
+            Piece::Tank(tank) => Some(tank.cost),
+            Piece::Soldier(soldier) => Some(soldier.cost),
+            Piece::Medic(medic) => Some(medic.cost),
+            _ => None,
+        }
+    }
+    pub fn movable(&self) -> bool {
+        match self {
+            Piece::Scout(scout) => true,
+            Piece::Tank(tank) => true,
+            Piece::Soldier(soldier) => true,
+            Piece::Medic(medic) => true,
+            Piece::Wall(wall) => false,
+            Piece::Base(base) => false,
+            Piece::GoldPot(gold_pot) => false,
+            _ => false,
+        }
+    }
+    pub fn can_move(&self, grid: &IGrid) -> bool {
+        // match all pieces that implement Move and use the not_blocked method to check if they can move
+        match self {
+            Piece::Scout(scout) => scout.not_blocked(grid),
+            Piece::Tank(tank) => tank.not_blocked(grid),
+            Piece::Soldier(soldier) => soldier.not_blocked(grid),
+            Piece::Medic(medic) => medic.not_blocked(grid),
+            _ => false,
+        }
+    }
+    pub fn attacking(&self, grid: &IGrid) -> bool {
+        match self {
+            Piece::Scout(scout) => true,
+            Piece::Tank(tank) => true,
+            Piece::Soldier(soldier) => true,
+            Piece::Medic(medic) => false,
+            Piece::Wall(wall) => false,
+            Piece::Base(base) => false,
+            Piece::GoldPot(gold_pot) => false,
+            _ => false,
+        }
+    }
+    pub fn can_attack(&self, grid: &IGrid) -> bool {
+        match self {
+            Piece::Scout(scout) => scout.can_attack(grid),
+            Piece::Tank(tank) => tank.can_attack(grid),
+            Piece::Soldier(soldier) => soldier.can_attack(grid),
+            _ => false,
         }
     }
 }

@@ -64,7 +64,7 @@ impl IGrid {
     }
 
     pub fn is_valid(&self, coord: &Coord) -> bool {
-        if !self.is_in_range(coord) {
+        if !self.coord_in_grid(coord) {
             return false;
         } else if self.grid_pieces.contains_key(&coord) {
             match self.grid_pieces.get(&coord) {
@@ -83,7 +83,7 @@ impl IGrid {
         }
     }
 
-    fn is_in_range(&self, coord: &Coord) -> bool {
+    fn coord_in_grid(&self, coord: &Coord) -> bool {
         if coord.get_x() < self.top_left.get_x()
             || coord.get_y() < self.top_left.get_y()
             || coord.get_x() > self.bottom_right.get_x()
@@ -95,10 +95,10 @@ impl IGrid {
         }
     }
 
-    pub fn type_of_slot(&self, coord: &Coord) -> CoordType {
+    pub fn coord_type(&self, coord: &Coord) -> CoordType {
         if self.is_valid(coord) {
             Available(*coord)
-        } else if self.is_in_range(coord) {
+        } else if self.coord_in_grid(coord) {
             UnAvailable(*coord)
         } else {
             OutOfBounds(*coord)
@@ -110,6 +110,14 @@ impl IGrid {
     }
     pub fn get_width(&self) -> i32 {
         self.bottom_right.get_x() - self.top_left.get_x() + 1
+    }
+    pub fn get_coord(&self, piece: &Piece) -> Option<Coord> {
+        for (coord, piece_in_grid) in self.grid_pieces.iter() {
+            if piece_in_grid == piece {
+                return Some(*coord);
+            }
+        }
+        None
     }
 }
 

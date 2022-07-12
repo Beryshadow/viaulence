@@ -7,18 +7,35 @@ use crate::{
     pieces::movement::Slot::*,
 };
 
-use super::traits::Move;
+use super::traits::{Attack, Attackable, Move};
 
 pub fn populate_tree<T>(coord: &Coord, movable: T, grid: &IGrid) -> ThreeProngedTree
 where
     T: Move,
 {
-    let mut tree = ThreeProngedTree::from(Available(*coord));
+    let coords = movable.get_coord();
+    let mut tree = ThreeProngedTree::from(Available(*coords));
     let depth = movable.get_moves().unwrap();
     let mut previous = vec![*coord];
-    tree.populate_last_layer(grid, &mut previous, depth);
+    tree.populate_for_depth(grid, &mut previous, depth);
     tree.set_list_of_children(previous);
     tree
+}
+
+pub fn not_blocked<T>(movable: &T, grid: &IGrid) -> bool
+where
+    T: Move,
+{
+    let mut tree = ThreeProngedTree::from(Available(*movable.get_coord()));
+    tree.populate_for_depth(grid, &mut vec![*movable.get_coord()], 1);
+    // get the list of children
+    let mut children = tree.get_list_of_children();
+    // if the list is empty, then the piece can't move
+    if children.is_empty() {
+        return false;
+    }
+    // if the list is not empty, then the piece can move
+    true
 }
 
 #[derive(Debug, Clone)]
@@ -133,7 +150,7 @@ impl ThreeProngedTree {
         let mut counter = 0;
         for coord in moves {
             counter += 1;
-            match grid.type_of_slot(&coord) {
+            match grid.coord_type(&coord) {
                 CoordType::Available(_) => {
                     let tree = TwoProngedTree::from(Available(coord), *self.get_root());
                     previous.push(coord);
@@ -181,15 +198,8 @@ impl ThreeProngedTree {
     fn get_root(&self) -> &Coord {
         self.value.get_ref()
     }
-    fn populate_last_layer(&mut self, grid: &IGrid, previous: &mut Vec<Coord>, depth: i8) {
+    fn populate_for_depth(&mut self, grid: &IGrid, previous: &mut Vec<Coord>, depth: i8) {
         for current_depth in 0..depth {
-            println!("");
-            println!("current depth is {}", current_depth);
-            println!(
-                "lenght of bottom branches is {}",
-                self.get_bottom_branches().len()
-            );
-            println!("");
             if self.get_bottom_branches().len() == 0 {
                 if current_depth != 0 {
                     break;
@@ -327,7 +337,7 @@ impl TwoProngedTree {
                 let tree = TwoProngedTree::from(Blocked(coord), coord_provenance);
                 self.set_no_blocked(tree, counter);
             } else {
-                match grid.type_of_slot(&coord) {
+                match grid.coord_type(&coord) {
                     CoordType::Available(_) => {
                         let tree = TwoProngedTree::from(Available(coord), coord_provenance);
                         previous.push(coord);
