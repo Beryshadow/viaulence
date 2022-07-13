@@ -1,18 +1,24 @@
 // fn a player is a struct with a vec of pieces he owns, an amount of gold and an amount of coins
 // a player will exist so long as the grid also exists
 
-use crate::{game::gamestate::Game, grid::isometric_grid::IGrid, pieces::tokens::Piece};
+// might need to remake player
 
-#[derive(Debug, Clone)]
+use crate::{
+    game::gamestate::Game,
+    grid::isometric_grid::IGrid,
+    pieces:: traits::Piece,
+};
+
+#[derive(Debug)]
 pub struct Player<'a> {
     uuid: uuid::Uuid,
-    pieces: Vec<&'a Piece>,
+    pieces: Vec<'a Box<& dyn Piece>>,
     gold: i32,
     coins: i32,
 }
 
-impl<'a> Player<'a> {
-    pub fn new() -> Player<'a> {
+impl Player<'_> {
+    pub fn new() -> Player<'static> {
         Player {
             uuid: uuid::Uuid::new_v4(),
             pieces: Vec::new(),
@@ -20,10 +26,14 @@ impl<'a> Player<'a> {
             coins: 1000,
         }
     }
-    pub fn add_piece(&mut self, piece: &'a Piece) {
-        self.pieces.push(piece);
+    pub fn add_piece<T>(&mut self, piece: &dyn Piece)
+    where
+        T: Piece,
+    {
+        self.pieces.push(Box::from(piece));
+        // self.pieces.push(piece);
     }
-    pub fn pieces(&self) -> &Vec<&'a Piece> {
+    pub fn pieces(&self) -> &Vec<Box<dyn Piece>> {
         &self.pieces
     }
     pub fn can_play(&self, game: Game) -> bool {

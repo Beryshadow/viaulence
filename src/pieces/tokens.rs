@@ -5,18 +5,19 @@ use uuid::Uuid;
 use crate::grid::isometric_grid::{Coord, IGrid};
 
 use super::{
-    movement::{in_range, not_blocked},
-    traits::{Attack, Attackable, Move},
+    // attack::in_range,
+    movement::not_blocked,
+    traits::{Attack, Attackable, Move, Piece},
 }; // will be used to categorise pieces
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Empty {}
 
 /* LII this is all the pieces that can be placed on the grid
 we need to implement the appropriate traits for each piece
 */
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Scout {
     coord: Coord,
     uuid: uuid::Uuid,
@@ -54,6 +55,39 @@ impl Scout {
     }
 }
 
+impl Piece for Scout {
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn get_uuid(&self) -> &Uuid {
+        &self.uuid
+    }
+    fn change_immune_state(&mut self, immune: bool) {
+        self.immune = immune;
+    }
+    fn is_immune(&self) -> bool {
+        self.immune
+    }
+    fn get_on_base(&self) -> bool {
+        self.base_under
+    }
+    fn set_on_base(&mut self, on_base: bool) {
+        self.base_under = on_base;
+    }
+    fn get_on_pot(&self) -> bool {
+        self.pot_under
+    }
+    fn set_on_pot(&mut self, on_pot: bool) {
+        self.pot_under = on_pot;
+    }
+    fn can_host_piece(&self) -> bool {
+        false
+    }
+    fn get_name(&self) -> &str {
+        "Scout"
+    }
+}
+
 impl Move for Scout {
     fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
         unimplemented!();
@@ -69,14 +103,32 @@ impl Move for Scout {
     }
 }
 
+impl Attackable for Scout {
+    fn can_be_attacked(&self) -> bool {
+        if self.immune {
+            return false;
+        }
+        true
+    }
+    fn get_uuid(&self) -> Uuid {
+        self.uuid
+    }
+}
+
 impl Attack for Scout {
     fn attack(&self, attacked: &mut dyn Attackable, grid: &IGrid) -> Result<(), Error> {
         // we get the pieces in range and check the attacked piece is not immune and is not the same team and is in range
         Ok(())
     }
     fn can_attack(&self, grid: &IGrid) -> bool {
-        // check if any pieces are in range and are not immune and are not the same team
-        in_range(self, grid)
+        //LMKL check if any pieces are in range and are not immune and are not the same team
+        // let joe = in_range(self, grid);
+        // if joe.is_empty() {
+        //     return false;
+        // } else {
+        //     return true;
+        // }
+        true
     }
     fn get_coord(&self) -> &Coord {
         &self.coord
@@ -89,7 +141,7 @@ impl Attack for Scout {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Tank {
     coord: Coord,
     uuid: uuid::Uuid,
@@ -122,6 +174,39 @@ impl Tank {
     }
 }
 
+impl Piece for Tank {
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn get_uuid(&self) -> &Uuid {
+        &self.uuid
+    }
+    fn change_immune_state(&mut self, immune: bool) {
+        self.immune = immune;
+    }
+    fn is_immune(&self) -> bool {
+        self.immune
+    }
+    fn get_on_base(&self) -> bool {
+        self.base_under
+    }
+    fn set_on_base(&mut self, on_base: bool) {
+        self.base_under = on_base;
+    }
+    fn get_on_pot(&self) -> bool {
+        self.pot_under
+    }
+    fn set_on_pot(&mut self, on_pot: bool) {
+        self.pot_under = on_pot;
+    }
+    fn can_host_piece(&self) -> bool {
+        false
+    }
+    fn get_name(&self) -> &str {
+        "Tank"
+    }
+}
+
 impl Move for Tank {
     fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
         unimplemented!();
@@ -138,7 +223,7 @@ impl Move for Tank {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Soldier {
     coord: Coord,
     uuid: uuid::Uuid,
@@ -175,6 +260,39 @@ impl Soldier {
     }
 }
 
+impl Piece for Soldier {
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn get_uuid(&self) -> &Uuid {
+        &self.uuid
+    }
+    fn change_immune_state(&mut self, immune: bool) {
+        self.immune = immune;
+    }
+    fn is_immune(&self) -> bool {
+        self.immune
+    }
+    fn get_on_base(&self) -> bool {
+        self.base_under
+    }
+    fn set_on_base(&mut self, on_base: bool) {
+        self.base_under = on_base;
+    }
+    fn get_on_pot(&self) -> bool {
+        self.pot_under
+    }
+    fn set_on_pot(&mut self, on_pot: bool) {
+        self.pot_under = on_pot;
+    }
+    fn can_host_piece(&self) -> bool {
+        false
+    }
+    fn get_name(&self) -> &str {
+        "Soldier"
+    }
+}
+
 impl Move for Soldier {
     fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
         unimplemented!();
@@ -190,7 +308,7 @@ impl Move for Soldier {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Medic {
     coord: Coord,
     uuid: uuid::Uuid,
@@ -219,6 +337,39 @@ impl Medic {
     }
 }
 
+impl Piece for Medic {
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn get_uuid(&self) -> &Uuid {
+        &self.uuid
+    }
+    fn change_immune_state(&mut self, immune: bool) {
+        self.immune = immune;
+    }
+    fn is_immune(&self) -> bool {
+        self.immune
+    }
+    fn get_on_base(&self) -> bool {
+        self.base_under
+    }
+    fn set_on_base(&mut self, on_base: bool) {
+        self.base_under = on_base;
+    }
+    fn get_on_pot(&self) -> bool {
+        self.pot_under
+    }
+    fn set_on_pot(&mut self, on_pot: bool) {
+        self.pot_under = on_pot;
+    }
+    fn can_host_piece(&self) -> bool {
+        false
+    }
+    fn get_name(&self) -> &str {
+        "Medic"
+    }
+}
+
 impl Move for Medic {
     fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
         unimplemented!();
@@ -233,8 +384,9 @@ impl Move for Medic {
         not_blocked(self, grid)
     }
 }
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Wall {
+    coord: Coord,
     uuid: uuid::Uuid,
     team: uuid::Uuid,
     immune: bool,
@@ -242,8 +394,9 @@ pub struct Wall {
 }
 
 impl Wall {
-    pub fn new(team_uuid: Uuid) -> Wall {
+    pub fn new(team_uuid: Uuid, coord: Coord) -> Wall {
         Wall {
+            coord: coord,
             uuid: Uuid::new_v4(),
             team: team_uuid,
             immune: false,
@@ -252,16 +405,47 @@ impl Wall {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+impl Piece for Wall {
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn get_uuid(&self) -> &Uuid {
+        &self.uuid
+    }
+    fn change_immune_state(&mut self, immune: bool) {
+        self.immune = immune;
+    }
+    fn is_immune(&self) -> bool {
+        self.immune
+    }
+    fn get_on_base(&self) -> bool {
+        false
+    }
+    fn set_on_base(&mut self, on_base: bool) {}
+    fn get_on_pot(&self) -> bool {
+        false
+    }
+    fn set_on_pot(&mut self, on_pot: bool) {}
+    fn can_host_piece(&self) -> bool {
+        false
+    }
+    fn get_name(&self) -> &str {
+        "Wall"
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Base {
+    coord: Coord,
     uuid: uuid::Uuid,
     team: uuid::Uuid,
     immune: bool,
 }
 
 impl Base {
-    pub fn new(team_uuid: Uuid) -> Base {
+    pub fn new(team_uuid: Uuid, coord: Coord) -> Base {
         Base {
+            coord: coord,
             uuid: Uuid::new_v4(),
             team: team_uuid,
             immune: true,
@@ -269,164 +453,77 @@ impl Base {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+impl Piece for Base {
+    fn get_coord(&self) -> &Coord {
+        &self.coord
+    }
+    fn get_uuid(&self) -> &Uuid {
+        &self.uuid
+    }
+    fn change_immune_state(&mut self, immune: bool) {
+        self.immune = immune;
+    }
+    fn is_immune(&self) -> bool {
+        self.immune
+    }
+    fn get_on_base(&self) -> bool {
+        false
+    }
+    fn set_on_base(&mut self, on_base: bool) {}
+    fn get_on_pot(&self) -> bool {
+        false
+    }
+    fn set_on_pot(&mut self, on_pot: bool) {}
+    fn can_host_piece(&self) -> bool {
+        true
+    }
+    fn get_name(&self) -> &str {
+        "Base"
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct GoldPot {
+    coord: Coord,
     uuid: uuid::Uuid,
     immune: bool,
 }
 
 impl GoldPot {
-    pub fn new() -> GoldPot {
+    pub fn new(coord: Coord) -> GoldPot {
         GoldPot {
+            coord: coord,
             uuid: Uuid::new_v4(),
             immune: true,
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Piece {
-    Empty,
-    Scout(Scout),
-    Tank(Tank),
-    Soldier(Soldier),
-    Medic(Medic),
-    Wall(Wall),
-    Base(Base),
-    GoldPot(GoldPot),
-}
-
-impl AsMut<Piece> for Piece {
-    fn as_mut(&mut self) -> &mut Piece {
-        self
+impl Piece for GoldPot {
+    fn get_coord(&self) -> &Coord {
+        &self.coord
     }
-}
-
-impl Piece {
-    pub fn change_pot_state(&mut self, state: bool) -> &mut Piece {
-        match self {
-            Piece::Scout(scout) => scout.pot_under = state,
-            Piece::Tank(tank) => tank.pot_under = state,
-            Piece::Soldier(soldier) => soldier.pot_under = state,
-            Piece::Medic(medic) => medic.pot_under = state,
-            _ => {}
-        }
-        self
+    fn get_uuid(&self) -> &Uuid {
+        &self.uuid
     }
-    pub fn change_base_state(&mut self, state: bool) -> &mut Piece {
-        match self {
-            Piece::Scout(scout) => scout.base_under = state,
-            Piece::Tank(tank) => tank.base_under = state,
-            Piece::Soldier(soldier) => soldier.base_under = state,
-            Piece::Medic(medic) => medic.base_under = state,
-            _ => {}
-        }
-        self
+    fn change_immune_state(&mut self, immune: bool) {
+        self.immune = immune;
     }
-    pub fn change_immune_state(&mut self, state: bool) -> &mut Piece {
-        match self {
-            Piece::Scout(scout) => scout.immune = state,
-            Piece::Tank(tank) => tank.immune = state,
-            Piece::Soldier(soldier) => soldier.immune = state,
-            Piece::Medic(medic) => medic.immune = state,
-            Piece::Wall(wall) => wall.immune = state,
-            Piece::Base(base) => base.immune = state,
-            Piece::GoldPot(gold_pot) => gold_pot.immune = state,
-            _ => {}
-        }
-        self
+    fn is_immune(&self) -> bool {
+        self.immune
     }
-    pub fn change_health(&mut self, health: i8) -> &mut Piece {
-        match self {
-            Piece::Scout(scout) => scout.health = health,
-            Piece::Tank(tank) => tank.health = health,
-            Piece::Soldier(soldier) => soldier.health = health,
-            Piece::Medic(medic) => medic.health = health,
-            Piece::Wall(wall) => wall.health = health,
-            _ => {}
-        }
-        self
+    fn get_on_base(&self) -> bool {
+        false
     }
-    pub fn get_health(&self) -> Option<i8> {
-        match self {
-            Piece::Scout(scout) => Some(scout.health),
-            Piece::Tank(tank) => Some(tank.health),
-            Piece::Soldier(soldier) => Some(soldier.health),
-            Piece::Medic(medic) => Some(medic.health),
-            Piece::Wall(wall) => Some(wall.health),
-            _ => None,
-        }
+    fn set_on_base(&mut self, on_base: bool) {}
+    fn get_on_pot(&self) -> bool {
+        false
     }
-    pub fn get_uuid(&self) -> Option<uuid::Uuid> {
-        match self {
-            Piece::Scout(scout) => Some(scout.uuid),
-            Piece::Tank(tank) => Some(tank.uuid),
-            Piece::Soldier(soldier) => Some(soldier.uuid),
-            Piece::Medic(medic) => Some(medic.uuid),
-            Piece::Wall(wall) => Some(wall.uuid),
-            Piece::Base(base) => Some(base.uuid),
-            Piece::GoldPot(gold_pot) => Some(gold_pot.uuid),
-            _ => None,
-        }
+    fn set_on_pot(&mut self, on_pot: bool) {}
+    fn can_host_piece(&self) -> bool {
+        true
     }
-    pub fn get_moves(&self) -> Option<i8> {
-        match self {
-            Piece::Scout(scout) => Some(scout.movement),
-            Piece::Tank(tank) => Some(tank.movement),
-            Piece::Soldier(soldier) => Some(soldier.movement),
-            Piece::Medic(medic) => Some(medic.movement),
-            _ => None,
-        }
-    }
-    pub fn get_cost(&self) -> Option<i32> {
-        match self {
-            Piece::Scout(scout) => Some(scout.cost),
-            Piece::Tank(tank) => Some(tank.cost),
-            Piece::Soldier(soldier) => Some(soldier.cost),
-            Piece::Medic(medic) => Some(medic.cost),
-            _ => None,
-        }
-    }
-    pub fn movable(&self) -> bool {
-        match self {
-            Piece::Scout(scout) => true,
-            Piece::Tank(tank) => true,
-            Piece::Soldier(soldier) => true,
-            Piece::Medic(medic) => true,
-            Piece::Wall(wall) => false,
-            Piece::Base(base) => false,
-            Piece::GoldPot(gold_pot) => false,
-            _ => false,
-        }
-    }
-    pub fn can_move(&self, grid: &IGrid) -> bool {
-        // match all pieces that implement Move and use the not_blocked method to check if they can move
-        match self {
-            Piece::Scout(scout) => scout.not_blocked(grid),
-            Piece::Tank(tank) => tank.not_blocked(grid),
-            Piece::Soldier(soldier) => soldier.not_blocked(grid),
-            Piece::Medic(medic) => medic.not_blocked(grid),
-            _ => false,
-        }
-    }
-    pub fn attacking(&self, grid: &IGrid) -> bool {
-        match self {
-            Piece::Scout(scout) => true,
-            Piece::Tank(tank) => true,
-            Piece::Soldier(soldier) => true,
-            Piece::Medic(medic) => false,
-            Piece::Wall(wall) => false,
-            Piece::Base(base) => false,
-            Piece::GoldPot(gold_pot) => false,
-            _ => false,
-        }
-    }
-    pub fn can_attack(&self, grid: &IGrid) -> bool {
-        match self {
-            Piece::Scout(scout) => scout.can_attack(grid),
-            Piece::Tank(tank) => tank.can_attack(grid),
-            Piece::Soldier(soldier) => soldier.can_attack(grid),
-            _ => false,
-        }
+    fn get_name(&self) -> &str {
+        "GoldPot"
     }
 }

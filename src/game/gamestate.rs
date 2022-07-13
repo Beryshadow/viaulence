@@ -1,13 +1,14 @@
-// lets create a new game
+// lets create a new game we might have to remake game state entirely
 
+use std::fmt::Debug;
 use std::io::Error;
 
 use crate::grid::isometric_grid::IGrid;
 use crate::pieces;
-use crate::pieces::tokens::Piece;
+use crate::pieces::traits::Piece;
 use crate::player::player::Player;
 
-pub fn start_new_game(player_count: i32, pieces_available: Vec<Piece>) -> Game<'static> {
+pub fn start_new_game(player_count: i32, pieces_available: Vec<dyn Piece>) -> Game {
     // create a new game
     let mut game = Game::from(player_count, pieces_available);
 
@@ -23,14 +24,19 @@ pub fn start_new_game(player_count: i32, pieces_available: Vec<Piece>) -> Game<'
 }
 
 // a game is a struct that has a grid, a vec of players and a current player pointer
-#[derive(Debug, Clone)]
-pub struct Game<'a> {
+pub struct Game {
     grid: IGrid,
     players: Vec<Player<'a>>,
     player_count: i32,
     turn: usize,
     gold_in_game: i32,
-    available_pieces: Vec<Piece>,
+    available_pieces: Vec<Box<dyn Piece>>,
+}
+
+impl Debug for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Game {{ grid: {:#?}, players: {:#?}, player_count: {}, turn: {}, gold_in_game: {}, available_pieces: {:#?} }}", self.grid, self.players, self.player_count, self.turn, self.gold_in_game, self.available_pieces)
+    }
 }
 
 impl<'a> Game<'a> {
@@ -44,7 +50,7 @@ impl<'a> Game<'a> {
             available_pieces: Vec::new(),
         }
     }
-    fn from(players: i32, pieces_available: Vec<Piece>) -> Game<'a> {
+    fn from(players: i32, pieces_available: Vec<dyn Piece>) -> Game {
         let mut player_vec = Vec::new();
         for _ in 0..players {
             let player = Player::new();
@@ -87,7 +93,7 @@ impl<'a> Game<'a> {
     pub fn get_grid_ref(&self) -> &IGrid {
         &self.grid
     }
-    pub fn lowest_costing_piece(&self) -> Option<&Piece> {
+    pub fn lowest_costing_piece(&self) -> Option<&dyn Piece> {
         let mut lowest_costing_piece = None;
         for piece in self.available_pieces.iter() {
             if lowest_costing_piece.is_none() {

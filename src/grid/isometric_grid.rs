@@ -1,16 +1,26 @@
 use crate::pieces::{
-    movement::CoordType::{self, *},
-    tokens::Piece,
+    traits::Piece,
+    tree::CoordType::{self, *},
 };
 
 use core::hash::Hash;
-use std::{collections::HashMap, fmt::Debug};
+use std::{collections::HashMap, fmt::Debug, io::Error};
 
-#[derive(Debug, Clone)]
+// #[derive(Debug, Clone)]
 pub struct IGrid {
-    grid_pieces: HashMap<Coord, Piece>,
+    grid_pieces: HashMap<Coord, Box<dyn Piece>>, //LMKL
     top_left: Coord,
     bottom_right: Coord,
+}
+
+impl Debug for IGrid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "IGrid {{ grid_pieces: {:#?}, top_left: {:#?}, bottom_right: {:#?} }}",
+            self.grid_pieces, self.top_left, self.bottom_right
+        )
+    }
 }
 
 impl IGrid {
@@ -30,59 +40,73 @@ impl IGrid {
         }
     }
 
-    pub fn add_piece(&mut self, piece: Piece, coord: Coord) {
-        if !self.grid_pieces.contains_key(&coord) {
-            self.grid_pieces.insert(coord, piece);
+    pub fn add_piece<T>(&mut self, piece: T) -> Result<(), Error>
+    where
+        T: Piece + Debug + 'static + Copy,
+    {
+        let coord = piece.get_coord();
+        println!("piece is {:?}", piece);
+        if !self.grid_pieces.contains_key(coord) {
+            let piece = Box::from(piece);
+            self.grid_pieces.insert(*coord, piece);
         } else {
             match self.grid_pieces.get(&coord) {
-                Some(Piece::Empty) => {
-                    self.grid_pieces.insert(coord, piece);
+                Some(GoldPot) => {
+                    let piece = Box::new(piece);
+                    self.grid_pieces.insert(*coord, piece);
+                    let mut temp = self.grid_pieces.get_mut(&coord).unwrap().as_mut();
+                    temp.set_on_pot(true);
+                    temp.set_on_base(false);
+                    temp.change_immune_state(true);
                 }
-                Some(Piece::GoldPot(_)) => {
-                    self.grid_pieces.insert(coord, piece);
-                    self.grid_pieces
-                        .get_mut(&coord)
-                        .unwrap()
-                        .as_mut()
-                        .change_pot_state(true)
-                        .change_base_state(false)
-                        .change_immune_state(true);
-                }
-                Some(Piece::Base(_)) => {
-                    self.grid_pieces.insert(coord, piece);
-                    self.grid_pieces
-                        .get_mut(&coord)
-                        .unwrap()
-                        .as_mut()
-                        .change_pot_state(false)
-                        .change_base_state(true)
-                        .change_immune_state(true);
+                Some(Base) => {
+                    let piece = Box::new(piece);
+                    self.grid_pieces.insert(*coord, piece);
+                    let mut temp = self.grid_pieces.get_mut(&coord).unwrap().as_mut();
+                    temp.set_on_pot(false);
+                    temp.set_on_base(true);
+                    temp.change_immune_state(true);
                 }
                 _ => {}
             }
         }
+        Ok(())
     }
 
+    // check if the coord is a valid place to put a piece
     pub fn is_valid(&self, coord: &Coord) -> bool {
         if !self.coord_in_grid(coord) {
             return false;
-        } else if self.grid_pieces.contains_key(&coord) {
-            match self.grid_pieces.get(&coord) {
-                Some(Piece::Empty) => true,
-                Some(Piece::Scout(_)) => false,
-                Some(Piece::Tank(_)) => false,
-                Some(Piece::Soldier(_)) => false,
-                Some(Piece::Medic(_)) => false,
-                Some(Piece::Wall(_)) => false,
-                Some(Piece::Base(_)) => true,
-                Some(Piece::GoldPot(_)) => true,
-                _ => false,
-            }
+        } else if self.grid_pieces.contains_key(coord) {
+            // get the piece at the coord
+            let piece = self.grid_pieces.get(coord).unwrap();
+            piece.can_host_piece()
         } else {
             true
         }
     }
 
+    // old version of coord valid
+
+    /* if !self.coord_in_grid(coord) {
+        return false;
+    } else if self.grid_pieces.contains_key(&coord) {
+        match self.grid_pieces.get(&coord) {
+            Some(PieceNeedsToGo::Empty) => true,
+            Some(PieceNeedsToGo::Scout(_)) => false,
+            Some(PieceNeedsToGo::Tank(_)) => false,
+            Some(PieceNeedsToGo::Soldier(_)) => false,
+            Some(PieceNeedsToGo::Medic(_)) => false,
+            Some(PieceNeedsToGo::Wall(_)) => false,
+            Some(PieceNeedsToGo::Base(_)) => true,
+            Some(PieceNeedsToGo::GoldPot(_)) => true,
+            _ => false,
+        }
+    } else {
+        true
+    } */
+
+    // check if the coord is inside the grid
     fn coord_in_grid(&self, coord: &Coord) -> bool {
         if coord.get_x() < self.top_left.get_x()
             || coord.get_y() < self.top_left.get_y()
@@ -95,29 +119,41 @@ impl IGrid {
         }
     }
 
+    // check the coord type
     pub fn coord_type(&self, coord: &Coord) -> CoordType {
         if self.is_valid(coord) {
             Available(*coord)
         } else if self.coord_in_grid(coord) {
-            UnAvailable(*coord)
+            Occupied(*coord)
         } else {
             OutOfBounds(*coord)
         }
     }
 
-    pub fn get_hight(&self) -> i32 {
+    // get the height of the grid
+    pub fn get_height(&self) -> i32 {
         self.bottom_right.get_y() - self.top_left.get_y() + 1
     }
+    // get the width of the grid
     pub fn get_width(&self) -> i32 {
         self.bottom_right.get_x() - self.top_left.get_x() + 1
     }
-    pub fn get_coord(&self, piece: &Piece) -> Option<Coord> {
-        for (coord, piece_in_grid) in self.grid_pieces.iter() {
-            if piece_in_grid == piece {
+    // get the coord of a piece
+    pub fn get_coord<T>(&self, piece: &T) -> Option<Coord>
+    where
+        T: Piece,
+    {
+        for (coord, piece_) in &self.grid_pieces {
+            if piece_.get_uuid() == piece.get_uuid() {
                 return Some(*coord);
             }
         }
         None
+    }
+
+    // get the piece at a coord
+    pub fn get_piece(&self, coord: &Coord) -> Option<&Box<dyn Piece>> {
+        self.grid_pieces.get(coord)
     }
 }
 

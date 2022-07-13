@@ -1,5 +1,6 @@
 use std::io::Error;
 
+use std::fmt::Debug;
 use uuid::Uuid;
 
 use crate::grid::isometric_grid::{Coord, IGrid};
@@ -7,7 +8,30 @@ use crate::grid::isometric_grid::{Coord, IGrid};
 // use super::tokens::Piece;
 
 pub trait Piece {
+    //: Clone + std::fmt::Debug
     // can occupy a slot has coords,
+    fn get_coord(&self) -> &Coord;
+    fn get_uuid(&self) -> &Uuid;
+    fn change_immune_state(&mut self, immune: bool);
+    fn is_immune(&self) -> bool;
+    fn get_on_base(&self) -> bool;
+    fn set_on_base(&mut self, on_base: bool);
+    fn get_on_pot(&self) -> bool;
+    fn set_on_pot(&mut self, on_pot: bool);
+    fn can_host_piece(&self) -> bool;
+    fn get_name(&self) -> &str;
+}
+
+impl Debug for dyn Piece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Piece {{ coord: {:#?} }}", self.get_coord())
+    }
+}
+
+impl PartialEq for dyn Piece {
+    fn eq(&self, other: &Self) -> bool {
+        self.get_uuid() == other.get_uuid()
+    }
 }
 
 pub trait Attack {
@@ -25,7 +49,7 @@ pub trait Attack {
 
 pub trait Attackable {
     // it has a health attribute and is not currently immune to attacks
-    fn can_be_attacked(&self, attacker: &dyn Piece) -> bool;
+    fn can_be_attacked(&self) -> bool;
     fn get_uuid(&self) -> Uuid;
 }
 

@@ -1,12 +1,14 @@
-use crate::grid::isometric_grid::IGrid;
+use crate::grid::isometric_grid::{Coord, IGrid};
 use std::io::Error;
 
 // WWOT this is where we implement the search for targets and the attack logic
 
 use super::{
-    tokens::Piece,
-    traits::{Attack, Attackable},
+    traits::{Attack, Attackable, Piece},
+    tree::ThreeProngedTree,
 };
+
+use crate::pieces::tree::Slot::Available;
 
 pub fn attack<A, T>(attacker: &A, attacked: &T, grid: &IGrid) -> Result<(), Error>
 where
@@ -17,7 +19,7 @@ where
     unimplemented!();
 }
 
-fn get_all_targets<A>(attacker: &A, grid: &IGrid) -> Vec<Piece>
+fn get_all_targets<A>(attacker: &A, grid: &IGrid) -> Vec<Box<dyn Piece>>
 where
     A: Attack,
 {
@@ -29,29 +31,32 @@ where
 // building system in movment and isolate it so it can be used with attack and with movement
 // it would return a tree that we can analyse independently of the other modules
 
-// pub fn in_range<'a, T>(attacker: &T, grid: &'a IGrid) -> Vec<&'a (dyn Attackable + 'a)>
+// pub fn in_range<'a, T>(attacker: &'a T, grid: &'a IGrid) -> &'a Vec<Coord>
 // where
 //     T: Attack,
 // {
 //     // create a new tree with the attacker's coord as the root and the range as the depth
-//     let coords = attacker.get_coord();
-//     let mut tree = ThreeProngedTree::from(Available(*coords));
-//     let depth = attacker.get_range();
 //     let mut previous = vec![*attacker.get_coord()];
-//     let mut tree = populate_attack_tree(attacker, grid, &mut previous);
+//     let tree = populate_attack_tree(attacker, grid, &mut previous);
+//     let mut in_range = tree.get_list_of_children();
+//     // in_range.retain(|&c| c != *coords);
+//     // in_range.retain(|c| grid.get_piece(c).is_some());
+//     // in_range.retain(|c| grid.get_piece(c).unwrap().can_be_attacked(grid));
+//     in_range
 // }
 
-// fn populate_attack_tree<'a, T>(
-//     attacker: T,
-//     grid: &'a IGrid,
-//     previous: &mut Vec<Coord>,
-// ) -> ThreeProngedTree
-// where
-//     T: Attack,
-// {
-//     let mut tree = ThreeProngedTree::from(Available(*coord));
-//     let depth = attacker.get_range();
-//     tree.populate_for_depth(grid, previous, depth);
-//     tree.set_list_of_children(previous.clone());
-//     tree
-// }
+fn populate_attack_tree<'a, T>(
+    attacker: &T,
+    grid: &'a IGrid,
+    previous: &mut Vec<Coord>,
+) -> ThreeProngedTree
+where
+    T: Attack,
+{
+    let coord = attacker.get_coord();
+    let mut tree = ThreeProngedTree::from(Available(*coord));
+    let depth = attacker.get_range();
+    tree.populate_for_depth(grid, previous, depth as i32);
+    tree.set_list_of_children(previous.clone());
+    tree
+}
