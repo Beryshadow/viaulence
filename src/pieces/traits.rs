@@ -7,6 +7,23 @@ use crate::grid::isometric_grid::{Coord, IGrid};
 
 // use super::tokens::Piece;
 
+pub trait BuyablePiece: Piece + Buyable {
+    fn get_cost(&self) -> i32;
+    fn get_id(&self) -> Uuid;
+    fn set_id(&mut self, id: Uuid);
+}
+
+impl Debug for dyn BuyablePiece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "BuyablePiece {{ id: {}, cost: {} }}",
+            self.get_id(),
+            self.get_cost()
+        )
+    }
+}
+
 pub trait Piece {
     //: Clone + std::fmt::Debug
     // can occupy a slot has coords,
@@ -20,6 +37,8 @@ pub trait Piece {
     fn set_on_pot(&mut self, on_pot: bool);
     fn can_host_piece(&self) -> bool;
     fn get_name(&self) -> &str;
+    fn movable(&self) -> bool;
+    fn can_attack(&self) -> bool;
 }
 
 impl Debug for dyn Piece {

@@ -6,19 +6,22 @@
 use crate::{
     game::gamestate::Game,
     grid::isometric_grid::IGrid,
-    pieces:: traits::Piece,
+    pieces::{
+        movement::can_move,
+        traits::{Move, Piece},
+    },
 };
 
 #[derive(Debug)]
-pub struct Player<'a> {
+pub struct Player {
     uuid: uuid::Uuid,
-    pieces: Vec<'a Box<& dyn Piece>>,
+    pieces: Vec<Box<dyn Piece>>,
     gold: i32,
     coins: i32,
 }
 
-impl Player<'_> {
-    pub fn new() -> Player<'static> {
+impl Player {
+    pub fn new() -> Player {
         Player {
             uuid: uuid::Uuid::new_v4(),
             pieces: Vec::new(),
@@ -26,12 +29,8 @@ impl Player<'_> {
             coins: 1000,
         }
     }
-    pub fn add_piece<T>(&mut self, piece: &dyn Piece)
-    where
-        T: Piece,
-    {
-        self.pieces.push(Box::from(piece));
-        // self.pieces.push(piece);
+    pub fn add_piece(&mut self, piece: Box<dyn Piece>) {
+        self.pieces.push(piece);
     }
     pub fn pieces(&self) -> &Vec<Box<dyn Piece>> {
         &self.pieces
@@ -47,7 +46,7 @@ impl Player<'_> {
         // get the lowest costing piece and check if he has enough coins to buy it
         if game.lowest_costing_piece().is_none() {
             return false;
-        } else if game.lowest_costing_piece().unwrap().get_cost() > Some(self.coins) {
+        } else if game.lowest_costing_piece().unwrap().get_cost() > self.coins {
             return false;
         } else {
             return true;
@@ -60,7 +59,8 @@ impl Player<'_> {
             if piece.movable() {
                 // here we know we have a piece that can move
                 // we need to check if it has access to one of the three spaces around it
-                if piece.can_move(grid) {
+                let joe = piece;
+                if can_move(piece, grid) {
                     return true;
                 }
             }
@@ -71,7 +71,7 @@ impl Player<'_> {
         // a player can attack if he has a piece that can attack
         // the can attack method is in the movement trait
         for piece in self.pieces.iter() {
-            if piece.can_attack(grid) {
+            if piece.can_attack() {
                 //LII we need to propagate through all pieces and check if they can attack
                 // it would be better to optimize this by checking the longest range pieces first
             }

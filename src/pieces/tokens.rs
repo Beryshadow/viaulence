@@ -10,9 +10,6 @@ use super::{
     traits::{Attack, Attackable, Move, Piece},
 }; // will be used to categorise pieces
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
-pub struct Empty {}
-
 /* LII this is all the pieces that can be placed on the grid
 we need to implement the appropriate traits for each piece
 */
@@ -85,6 +82,12 @@ impl Piece for Scout {
     }
     fn get_name(&self) -> &str {
         "Scout"
+    }
+    fn movable(&self) -> bool {
+        true
+    }
+    fn can_attack(&self) -> bool {
+        true
     }
 }
 
@@ -205,6 +208,12 @@ impl Piece for Tank {
     fn get_name(&self) -> &str {
         "Tank"
     }
+    fn movable(&self) -> bool {
+        true
+    }
+    fn can_attack(&self) -> bool {
+        true
+    }
 }
 
 impl Move for Tank {
@@ -291,6 +300,12 @@ impl Piece for Soldier {
     fn get_name(&self) -> &str {
         "Soldier"
     }
+    fn movable(&self) -> bool {
+        true
+    }
+    fn can_attack(&self) -> bool {
+        true
+    }
 }
 
 impl Move for Soldier {
@@ -368,6 +383,12 @@ impl Piece for Medic {
     fn get_name(&self) -> &str {
         "Medic"
     }
+    fn movable(&self) -> bool {
+        true
+    }
+    fn can_attack(&self) -> bool {
+        false
+    }
 }
 
 impl Move for Medic {
@@ -432,6 +453,12 @@ impl Piece for Wall {
     fn get_name(&self) -> &str {
         "Wall"
     }
+    fn movable(&self) -> bool {
+        false
+    }
+    fn can_attack(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
@@ -480,6 +507,12 @@ impl Piece for Base {
     fn get_name(&self) -> &str {
         "Base"
     }
+    fn movable(&self) -> bool {
+        false
+    }
+    fn can_attack(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
@@ -525,5 +558,11 @@ impl Piece for GoldPot {
     }
     fn get_name(&self) -> &str {
         "GoldPot"
+    }
+    fn movable(&self) -> bool {
+        false
+    }
+    fn can_attack(&self) -> bool {
+        false
     }
 }

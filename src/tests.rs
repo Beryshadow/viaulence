@@ -11,7 +11,7 @@ use crate::{
 fn test_player() {
     let mut player = Player::new();
     let piece = Scout::new(Uuid::new_v4());
-    player.add_piece(&piece);
+    player.add_piece(Box::from(piece));
     assert_eq!(player.pieces().len(), 1);
 }
 #[test]

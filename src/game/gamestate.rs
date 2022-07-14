@@ -4,11 +4,10 @@ use std::fmt::Debug;
 use std::io::Error;
 
 use crate::grid::isometric_grid::IGrid;
-use crate::pieces;
-use crate::pieces::traits::Piece;
+use crate::pieces::traits::{Buyable, BuyablePiece, Piece};
 use crate::player::player::Player;
 
-pub fn start_new_game(player_count: i32, pieces_available: Vec<dyn Piece>) -> Game {
+pub fn start_new_game(player_count: i32, pieces_available: Vec<Box<dyn BuyablePiece>>) -> Game {
     // create a new game
     let mut game = Game::from(player_count, pieces_available);
 
@@ -26,11 +25,11 @@ pub fn start_new_game(player_count: i32, pieces_available: Vec<dyn Piece>) -> Ga
 // a game is a struct that has a grid, a vec of players and a current player pointer
 pub struct Game {
     grid: IGrid,
-    players: Vec<Player<'a>>,
+    players: Vec<Player>,
     player_count: i32,
     turn: usize,
     gold_in_game: i32,
-    available_pieces: Vec<Box<dyn Piece>>,
+    available_pieces: Vec<Box<dyn BuyablePiece>>,
 }
 
 impl Debug for Game {
@@ -39,8 +38,8 @@ impl Debug for Game {
     }
 }
 
-impl<'a> Game<'a> {
-    fn new() -> Game<'a> {
+impl<'a> Game {
+    fn new() -> Game {
         Game {
             grid: IGrid::new(),
             players: Vec::new(),
@@ -50,7 +49,7 @@ impl<'a> Game<'a> {
             available_pieces: Vec::new(),
         }
     }
-    fn from(players: i32, pieces_available: Vec<dyn Piece>) -> Game {
+    fn from(players: i32, pieces_available: Vec<Box<dyn BuyablePiece>>) -> Game {
         let mut player_vec = Vec::new();
         for _ in 0..players {
             let player = Player::new();
@@ -66,7 +65,7 @@ impl<'a> Game<'a> {
             available_pieces: pieces_available,
         }
     }
-    fn add_player(&mut self, player: Player<'a>) {
+    fn add_player(&mut self, player: Player) {
         self.player_count += 1;
         self.players.push(player);
     }
@@ -93,7 +92,7 @@ impl<'a> Game<'a> {
     pub fn get_grid_ref(&self) -> &IGrid {
         &self.grid
     }
-    pub fn lowest_costing_piece(&self) -> Option<&dyn Piece> {
+    pub fn lowest_costing_piece(&self) -> Option<&Box<dyn BuyablePiece>> {
         let mut lowest_costing_piece = None;
         for piece in self.available_pieces.iter() {
             if lowest_costing_piece.is_none() {
