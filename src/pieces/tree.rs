@@ -5,12 +5,9 @@ use crate::{
     pieces::tree::Slot::*,
 };
 
-use super::traits::{Attack, Attackable, Move, Piece};
+use super::traits::{Move, Piece};
 
-pub fn populate_tree<T>(coorded_piece: T, grid: &IGrid, depth: i32) -> ThreeProngedTree
-where
-    T: Piece,
-{
+pub fn populate_tree(coorded_piece: &Box<dyn Piece>, grid: &IGrid, depth: i32) -> ThreeProngedTree {
     let coords = coorded_piece.get_coord();
     let mut tree = ThreeProngedTree::from(Available(*coords));
     let mut previous = vec![*coords];
@@ -57,6 +54,19 @@ impl ThreeProngedTree {
     }
     pub fn get_list_of_children(&self) -> &Vec<Coord> {
         &self.list_of_children
+    }
+    pub fn get_list_of_available_children(&self) -> Vec<&Slot<TwoProngedTree>> {
+        let mut list_of_available_children = Vec::new();
+        if let Available(_) = self.first {
+            list_of_available_children.push(&self.first);
+        }
+        if let Available(_) = self.second {
+            list_of_available_children.push(&self.second);
+        }
+        if let Available(_) = self.third {
+            list_of_available_children.push(&self.third);
+        }
+        list_of_available_children
     }
     pub fn set_list_of_children(&mut self, list: Vec<Coord>) {
         self.list_of_children = list;
@@ -195,6 +205,9 @@ impl ThreeProngedTree {
     fn get_root(&self) -> &Coord {
         self.value.get_ref()
     }
+
+    //LMKL this dosent populate the children of the tree, it just sets the children of the tree
+
     pub fn populate_for_depth(&mut self, grid: &IGrid, previous: &mut Vec<Coord>, depth: i32) {
         for current_depth in 0..depth {
             if self.get_bottom_branches().len() == 0 {
@@ -501,7 +514,7 @@ impl Iterator for AvailableMovesIterator {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Slot<T> {
     Unchecked,
     Blocked(T),

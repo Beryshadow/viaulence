@@ -89,6 +89,9 @@ impl Piece for Scout {
     fn can_attack(&self) -> bool {
         true
     }
+    fn can_be_attacked(&self) -> bool {
+        true
+    }
 }
 
 impl Move for Scout {
@@ -97,9 +100,6 @@ impl Move for Scout {
     }
     fn get_moves(&self) -> Option<i8> {
         Some(self.movement)
-    }
-    fn get_coord(&self) -> &Coord {
-        &self.coord
     }
     fn not_blocked(&self, grid: &IGrid) -> bool {
         not_blocked(self, grid)
@@ -132,9 +132,6 @@ impl Attack for Scout {
         //     return true;
         // }
         true
-    }
-    fn get_coord(&self) -> &Coord {
-        &self.coord
     }
     fn get_range(&self) -> i8 {
         self.range
@@ -214,6 +211,9 @@ impl Piece for Tank {
     fn can_attack(&self) -> bool {
         true
     }
+    fn can_be_attacked(&self) -> bool {
+        true
+    }
 }
 
 impl Move for Tank {
@@ -222,9 +222,6 @@ impl Move for Tank {
     }
     fn get_moves(&self) -> Option<i8> {
         Some(self.movement)
-    }
-    fn get_coord(&self) -> &Coord {
-        &self.coord
     }
     fn not_blocked(&self, grid: &IGrid) -> bool {
         //LII this will need to be changed apropriately for the tank
@@ -306,6 +303,9 @@ impl Piece for Soldier {
     fn can_attack(&self) -> bool {
         true
     }
+    fn can_be_attacked(&self) -> bool {
+        true
+    }
 }
 
 impl Move for Soldier {
@@ -314,9 +314,6 @@ impl Move for Soldier {
     }
     fn get_moves(&self) -> Option<i8> {
         Some(self.movement)
-    }
-    fn get_coord(&self) -> &Coord {
-        &self.coord
     }
     fn not_blocked(&self, grid: &IGrid) -> bool {
         not_blocked(self, grid)
@@ -389,6 +386,9 @@ impl Piece for Medic {
     fn can_attack(&self) -> bool {
         false
     }
+    fn can_be_attacked(&self) -> bool {
+        true
+    }
 }
 
 impl Move for Medic {
@@ -397,9 +397,6 @@ impl Move for Medic {
     }
     fn get_moves(&self) -> Option<i8> {
         Some(self.movement)
-    }
-    fn get_coord(&self) -> &Coord {
-        &self.coord
     }
     fn not_blocked(&self, grid: &IGrid) -> bool {
         not_blocked(self, grid)
@@ -459,6 +456,9 @@ impl Piece for Wall {
     fn can_attack(&self) -> bool {
         false
     }
+    fn can_be_attacked(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
@@ -513,6 +513,9 @@ impl Piece for Base {
     fn can_attack(&self) -> bool {
         false
     }
+    fn can_be_attacked(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
@@ -563,6 +566,9 @@ impl Piece for GoldPot {
         false
     }
     fn can_attack(&self) -> bool {
+        false
+    }
+    fn can_be_attacked(&self) -> bool {
         false
     }
 }

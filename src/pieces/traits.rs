@@ -39,6 +39,7 @@ pub trait Piece {
     fn get_name(&self) -> &str;
     fn movable(&self) -> bool;
     fn can_attack(&self) -> bool;
+    fn can_be_attacked(&self) -> bool;
 }
 
 impl Debug for dyn Piece {
@@ -53,13 +54,12 @@ impl PartialEq for dyn Piece {
     }
 }
 
-pub trait Attack {
+pub trait Attack: Piece {
     // can attack if it has range, has a damage value, and is not on a base,
     fn attack(&self, attacked: &mut dyn Attackable, grid: &IGrid) -> Result<(), Error>;
     fn can_attack(&self, grid: &IGrid) -> bool;
     fn get_range(&self) -> i8;
     fn get_damage(&self) -> i8;
-    fn get_coord(&self) -> &Coord;
 
     // WWOT
     // This is important we need to take the piece and look
@@ -72,7 +72,7 @@ pub trait Attackable {
     fn get_uuid(&self) -> Uuid;
 }
 
-pub trait Move {
+pub trait Move: Piece {
     // we take a piece and a grid and return a Ok(()) if the move was successful or Err(()) if it was not
     fn move_(&self, grid: &IGrid, coord: Coord) -> Result<(), Error> {
         // we get the current coord of the piece self (maybe we can have coords in the piece?)
@@ -82,7 +82,6 @@ pub trait Move {
     fn get_moves(&self) -> Option<i8> {
         Some(0)
     }
-    fn get_coord(&self) -> &Coord;
     fn not_blocked(&self, grid: &IGrid) -> bool;
 }
 

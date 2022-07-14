@@ -155,6 +155,10 @@ impl IGrid {
     pub fn get_piece(&self, coord: &Coord) -> Option<&Box<dyn Piece>> {
         self.grid_pieces.get(coord)
     }
+    // get a reference to a coord in the grid from a owned coord
+    pub fn get_coord_ref(&self, coord: Coord) -> &Coord {
+        self.grid_pieces.get(&coord).unwrap().get_coord()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Copy, Hash, Eq)]
