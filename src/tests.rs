@@ -2,7 +2,8 @@ use uuid::Uuid;
 
 use crate::{
     pieces::{
-        traits::{Move, Piece},
+        attack::in_range,
+        traits::{Attack, Move, Piece},
         tree::populate_tree,
     },
     player::player::Player,
@@ -101,18 +102,15 @@ fn test_attack() {
 
     let mut grid = IGrid::from(Coord::from(0, 0), Coord::from(20, 20));
     grid.add_piece(scout1);
+    println!("works until here");
+    let bobo = in_range(&scout1, &grid);
+    println!("this is bobo: {:?}", bobo);
+    assert!(in_range(&scout1, &grid).len() == 0);
     grid.add_piece(scout2);
     grid.add_piece(scout3);
 
     assert_eq!(scout1.can_attack(), true);
-    let scout = Box::new(scout1) as Box<dyn Piece>;
-    assert_eq!(can_move(&scout, &grid), true);
-
-    let mut scout4 = Scout::new(Uuid::new_v4());
-    scout4.set_coords(Coord::from(9, 8));
-
-    grid.add_piece(scout4);
-
-    assert_eq!(scout1.can_attack(), true);
-    assert_eq!(can_move(&scout, &grid), false);
+    let scout = Box::new(scout1) as Box<dyn Attack>;
+    let joe = in_range(&scout1, &grid).len();
+    assert!(in_range(&scout1, &grid).len() > 0);
 }

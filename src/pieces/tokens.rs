@@ -123,16 +123,16 @@ impl Attack for Scout {
         // we get the pieces in range and check the attacked piece is not immune and is not the same team and is in range
         Ok(())
     }
-    fn can_attack(&self, grid: &IGrid) -> bool {
-        //LMKL check if any pieces are in range and are not immune and are not the same team
-        // let joe = in_range(self, grid);
-        // if joe.is_empty() {
-        //     return false;
-        // } else {
-        //     return true;
-        // }
-        true
-    }
+    // fn can_attack(&self, grid: &IGrid) -> bool {
+    //     //LMKL check if any pieces are in range and are not immune and are not the same team
+    //     // let joe = in_range(self, grid);
+    //     // if joe.is_empty() {
+    //     //     return false;
+    //     // } else {
+    //     //     return true;
+    //     // }
+    //     true
+    // }
     fn get_range(&self) -> i8 {
         self.range
     }

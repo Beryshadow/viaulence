@@ -57,7 +57,7 @@ impl PartialEq for dyn Piece {
 pub trait Attack: Piece {
     // can attack if it has range, has a damage value, and is not on a base,
     fn attack(&self, attacked: &mut dyn Attackable, grid: &IGrid) -> Result<(), Error>;
-    fn can_attack(&self, grid: &IGrid) -> bool;
+    // fn can_attack(&self, grid: &IGrid) -> bool;
     fn get_range(&self) -> i8;
     fn get_damage(&self) -> i8;
 

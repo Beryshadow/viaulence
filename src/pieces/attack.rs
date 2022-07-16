@@ -40,13 +40,19 @@ where
     let coords = attacker.get_coord();
     let mut previous = vec![*attacker.get_coord()];
     let tree = populate_attack_tree(attacker, grid, &mut previous);
-    let mut in_range = tree.get_list_of_children();
+    let in_range = tree.get_list_of_children();
 
     // to not have to clone the pieces we can reference the coords inside the grid
-    let mut grid_refs: Vec<&Coord> = in_range.iter().map(|&c| grid.get_coord_ref(c)).collect();
-    // then we remove the garbage
+
+    println!("in range: {:?}", in_range);
+    let mut grid_refs: Vec<Option<&Coord>> =
+        in_range.iter().map(|&c| grid.get_coord_ref(c)).collect(); // FIXME this is broken we gotta return an option from get_coor_ref
+                                                                   // then we remove the garbage
+    grid_refs.retain(|&c| c.is_some());
+    let mut grid_refs: Vec<&Coord> = grid_refs.iter().map(|&c| c.unwrap()).collect();
     grid_refs.retain(|&c| c != coords);
     grid_refs.retain(|c| grid.get_piece(c).is_some());
+
     grid_refs.retain(|c| grid.get_piece(c).unwrap().can_be_attacked());
     // we return the coords of the pieces that can be attacked
     grid_refs
