@@ -73,6 +73,10 @@ impl IGrid {
         Ok(())
     }
 
+    pub fn remove_piece(&mut self, coord: &Coord) {
+        self.grid_pieces.remove(coord);
+    }
+
     // check if the coord is a valid place to put a piece
     pub fn is_valid(&self, coord: &Coord) -> bool {
         if !self.coord_in_grid(coord) {

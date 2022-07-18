@@ -7,7 +7,7 @@ use crate::grid::isometric_grid::{Coord, IGrid};
 use super::{
     // attack::in_range,
     movement::not_blocked,
-    traits::{Attack, Attackable, Move, Piece},
+    traits::{Attack, Consumable, Move, Piece},
 }; // will be used to categorise pieces
 
 /* LII this is all the pieces that can be placed on the grid
@@ -59,6 +59,9 @@ impl Piece for Scout {
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        Some(&self.team)
+    }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
     }
@@ -92,6 +95,9 @@ impl Piece for Scout {
     fn can_be_attacked(&self) -> bool {
         true
     }
+    fn to_attack(&self) -> Option<&dyn Attack> {
+        Some(self)
+    }
 }
 
 impl Move for Scout {
@@ -106,20 +112,35 @@ impl Move for Scout {
     }
 }
 
-impl Attackable for Scout {
+impl Consumable for Scout {
+    fn get_cost(&self) -> i32 {
+        self.cost
+    }
+    fn get_health(&self) -> i32 {
+        self.health as i32
+    }
+    fn get_id(&self) -> &Uuid {
+        &self.uuid
+    }
+    fn set_id(&mut self, id: Uuid) {
+        self.uuid = id;
+    }
     fn can_be_attacked(&self) -> bool {
         if self.immune {
             return false;
         }
         true
     }
-    fn get_uuid(&self) -> Uuid {
-        self.uuid
+    fn get_team_uuid(&self) -> &Uuid {
+        &self.team
+    }
+    fn remove_health(&mut self, damage: i8) {
+        self.health -= damage;
     }
 }
 
 impl Attack for Scout {
-    fn attack(&self, attacked: &mut dyn Attackable, grid: &IGrid) -> Result<(), Error> {
+    fn attack(&self, attacked: &mut dyn Consumable, grid: &IGrid) -> Result<(), Error> {
         // we get the pieces in range and check the attacked piece is not immune and is not the same team and is in range
         Ok(())
     }
@@ -138,6 +159,9 @@ impl Attack for Scout {
     }
     fn get_damage(&self) -> i8 {
         self.attack
+    }
+    fn get_team_uuid(&self) -> &Uuid {
+        &self.team
     }
 }
 
@@ -174,12 +198,31 @@ impl Tank {
     }
 }
 
+impl Attack for Tank {
+    fn attack(&self, attacked: &mut dyn Consumable, grid: &IGrid) -> Result<(), Error> {
+        //LMKL we get the pieces in range and check the attacked piece is not immune and is not the same team and is in range
+        Ok(())
+    }
+    fn get_range(&self) -> i8 {
+        self.range
+    }
+    fn get_damage(&self) -> i8 {
+        self.attack
+    }
+    fn get_team_uuid(&self) -> &Uuid {
+        &self.team
+    }
+}
+
 impl Piece for Tank {
     fn get_coord(&self) -> &Coord {
         &self.coord
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
+    }
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        Some(&self.team)
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -213,6 +256,9 @@ impl Piece for Tank {
     }
     fn can_be_attacked(&self) -> bool {
         true
+    }
+    fn to_attack(&self) -> Option<&dyn Attack> {
+        Some(self)
     }
 }
 
@@ -266,12 +312,31 @@ impl Soldier {
     }
 }
 
+impl Attack for Soldier {
+    fn attack(&self, attacked: &mut dyn Consumable, grid: &IGrid) -> Result<(), Error> {
+        //LMKL we get the pieces in range and check the attacked piece is not immune and is not the same team and is in range
+        Ok(())
+    }
+    fn get_range(&self) -> i8 {
+        self.range
+    }
+    fn get_damage(&self) -> i8 {
+        self.attack
+    }
+    fn get_team_uuid(&self) -> &Uuid {
+        &self.team
+    }
+}
+
 impl Piece for Soldier {
     fn get_coord(&self) -> &Coord {
         &self.coord
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
+    }
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        Some(&self.team)
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -305,6 +370,9 @@ impl Piece for Soldier {
     }
     fn can_be_attacked(&self) -> bool {
         true
+    }
+    fn to_attack(&self) -> Option<&dyn Attack> {
+        Some(self)
     }
 }
 
@@ -356,6 +424,9 @@ impl Piece for Medic {
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        Some(&self.team)
+    }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
     }
@@ -388,6 +459,9 @@ impl Piece for Medic {
     }
     fn can_be_attacked(&self) -> bool {
         true
+    }
+    fn to_attack(&self) -> Option<&dyn Attack> {
+        None
     }
 }
 
@@ -430,6 +504,9 @@ impl Piece for Wall {
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        Some(&self.team)
+    }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
     }
@@ -459,6 +536,9 @@ impl Piece for Wall {
     fn can_be_attacked(&self) -> bool {
         true
     }
+    fn to_attack(&self) -> Option<&dyn Attack> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
@@ -486,6 +566,9 @@ impl Piece for Base {
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
+    }
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        Some(&self.team)
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -516,6 +599,9 @@ impl Piece for Base {
     fn can_be_attacked(&self) -> bool {
         false
     }
+    fn to_attack(&self) -> Option<&dyn Attack> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
@@ -541,6 +627,9 @@ impl Piece for GoldPot {
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
+    }
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        None
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -570,5 +659,8 @@ impl Piece for GoldPot {
     }
     fn can_be_attacked(&self) -> bool {
         false
+    }
+    fn to_attack(&self) -> Option<&dyn Attack> {
+        None
     }
 }

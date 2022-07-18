@@ -7,8 +7,9 @@ use crate::{
     game::gamestate::Game,
     grid::isometric_grid::IGrid,
     pieces::{
+        attack::{in_range, in_range_with_dyn},
         movement::can_move,
-        traits::{Move, Piece},
+        traits::{Attack, Move, Piece},
     },
 };
 
@@ -35,9 +36,9 @@ impl Player {
     pub fn pieces(&self) -> &Vec<Box<dyn Piece>> {
         &self.pieces
     }
-    pub fn can_play(&self, game: Game) -> bool {
+    pub fn can_play(&self, game: &Game) -> bool {
         // a player can play if he can buy a piece, move a piece, or attack a piece
-        self.can_buy(&game)
+        self.can_buy(game)
             || self.can_move(game.get_grid_ref())
             || self.can_attack(game.get_grid_ref())
     }
@@ -59,7 +60,6 @@ impl Player {
             if piece.movable() {
                 // here we know we have a piece that can move
                 // we need to check if it has access to one of the three spaces around it
-                let joe = piece;
                 if can_move(piece, grid) {
                     return true;
                 }
@@ -72,8 +72,10 @@ impl Player {
         // the can attack method is in the movement trait
         for piece in self.pieces.iter() {
             if piece.can_attack() {
-                //LII we need to propagate through all pieces and check if they can attack
-                // it would be better to optimize this by checking the longest range pieces first
+                let attack_piece = piece.to_attack().unwrap();
+                if in_range_with_dyn(attack_piece, grid).len() > 0 {
+                    return true;
+                }
             }
         }
         return false;

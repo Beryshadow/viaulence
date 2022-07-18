@@ -1,31 +1,48 @@
-use crate::grid::isometric_grid::{Coord, IGrid};
-use std::io::Error;
+use crate::{
+    game::{self, gamestate::Game},
+    grid::isometric_grid::{Coord, IGrid},
+};
+use std::io::{Error, ErrorKind};
 
 // WWOT this is where we implement the search for targets and the attack logic
 
 use super::{
-    traits::{Attack, Attackable, Piece},
+    traits::{Attack, Consumable, Piece},
     tree::{populate_tree, ThreeProngedTree},
 };
 
-use crate::pieces::tree::Slot::Available;
-
-pub fn attack<A, T>(attacker: &A, attacked: &T, grid: &IGrid) -> Result<(), Error>
+/// This function removes health from the target piece. Make sure to check if the target is available first with in_range()
+pub fn attack<A: 'static, T: 'static>(
+    attacker: &A,
+    attacked: &mut T,
+    game: &mut Game,
+) -> Result<(), Error>
 where
-    A: Attack,
-    T: Attackable,
+    A: Attack + Copy,
+    T: Consumable + Copy,
 {
-    // we get all the targets and in CanBeAttack we return self and check if coords match up with the available targets in get_all_targets
-    unimplemented!();
-}
+    // check if the target is immune
+    if attacked.is_immune() {
+        return Err(Error::new(ErrorKind::InvalidInput, "Target is immune"));
+    }
+    // check if the target is in range
+    if !in_range(attacker, game.get_grid_ref()).contains(&attacked.get_coord()) {
+        return Err(Error::new(
+            ErrorKind::InvalidInput,
+            "Target is not in range",
+        ));
+    }
+    // apply the damage
+    let damage = attacker.get_damage();
+    attacked.remove_health(damage);
 
-fn get_all_targets<A>(attacker: &A, grid: &IGrid) -> Vec<Box<dyn Piece>>
-where
-    A: Attack,
-{
-    // here the attack trait would have the build tree function and wed use it to search all available targets and return them
-    // let mut tree = populate_attack_tree(attacker, grid, previous);
-    unimplemented!();
+    // if the target is dead, remove it from the game
+    if attacked.get_health() <= 0 {
+        let attacked = Box::new(*attacked) as Box<dyn Consumable>;
+        game.remove_piece(attacked);
+    }
+
+    Ok(())
 }
 
 //LII this is the tree building function for the search for targets but we could take the tree
@@ -43,17 +60,18 @@ where
     let in_range = tree.get_list_of_children();
 
     // to not have to clone the pieces we can reference the coords inside the grid
-
-    println!("in range: {:?}", in_range);
     let mut grid_refs: Vec<Option<&Coord>> =
-        in_range.iter().map(|&c| grid.get_coord_ref(c)).collect(); // FIXME this is broken we gotta return an option from get_coor_ref
-                                                                   // then we remove the garbage
+        in_range.iter().map(|&c| grid.get_coord_ref(c)).collect();
     grid_refs.retain(|&c| c.is_some());
     let mut grid_refs: Vec<&Coord> = grid_refs.iter().map(|&c| c.unwrap()).collect();
     grid_refs.retain(|&c| c != coords);
     grid_refs.retain(|c| grid.get_piece(c).is_some());
-
     grid_refs.retain(|c| grid.get_piece(c).unwrap().can_be_attacked());
+    // we only keep the ones without the same team as the attacker
+    grid_refs.retain(|c| grid.get_piece(c).unwrap().get_team_uuid().is_some());
+    grid_refs.retain(|c| {
+        grid.get_piece(c).unwrap().get_team_uuid().unwrap() != Attack::get_team_uuid(attacker)
+    });
     // we return the coords of the pieces that can be attacked
     grid_refs
 }
@@ -69,6 +87,42 @@ where
     let coord = attacker.get_coord();
     let depth = attacker.get_range();
     let attacker = Box::new(*attacker) as Box<dyn Piece>;
-    let mut tree = populate_tree(&attacker, grid, 1);
+    let mut tree = populate_tree(&attacker, grid, depth.into());
+    tree
+}
+
+pub fn in_range_with_dyn<'a>(attacker: &dyn Attack, grid: &'a IGrid) -> Vec<&'a Coord> {
+    // create a new tree with the attacker's coord as the root and the range as the depth
+    let coords = attacker.get_coord();
+    let mut previous = vec![*attacker.get_coord()];
+    let tree = populate_attack_tree_with_dyn(attacker, grid, &mut previous);
+    let in_range = tree.get_list_of_children();
+
+    // to not have to clone the pieces we can reference the coords inside the grid
+    let mut grid_refs: Vec<Option<&Coord>> =
+        in_range.iter().map(|&c| grid.get_coord_ref(c)).collect();
+    grid_refs.retain(|&c| c.is_some());
+    let mut grid_refs: Vec<&Coord> = grid_refs.iter().map(|&c| c.unwrap()).collect();
+    grid_refs.retain(|&c| c != coords);
+    grid_refs.retain(|c| grid.get_piece(c).is_some());
+    grid_refs.retain(|c| grid.get_piece(c).unwrap().can_be_attacked());
+    // we only keep the ones without the same team as the attacker
+    grid_refs.retain(|c| grid.get_piece(c).unwrap().get_team_uuid().is_some());
+    grid_refs.retain(|c| {
+        grid.get_piece(c).unwrap().get_team_uuid().unwrap() != Attack::get_team_uuid(attacker)
+    });
+    // we return the coords of the pieces that can be attacked
+    grid_refs
+}
+
+fn populate_attack_tree_with_dyn(
+    attacker: &dyn Attack,
+    grid: &IGrid,
+    previous: &mut Vec<Coord>,
+) -> ThreeProngedTree {
+    let coord = attacker.get_coord();
+    let depth = attacker.get_range();
+    let attacker = grid.get_piece(attacker.get_coord()).unwrap();
+    let mut tree = populate_tree(&attacker, grid, depth.into());
     tree
 }

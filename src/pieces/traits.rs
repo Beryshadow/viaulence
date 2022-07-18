@@ -7,13 +7,17 @@ use crate::grid::isometric_grid::{Coord, IGrid};
 
 // use super::tokens::Piece;
 
-pub trait BuyablePiece: Piece + Buyable {
+pub trait Consumable: Piece {
     fn get_cost(&self) -> i32;
-    fn get_id(&self) -> Uuid;
+    fn get_id(&self) -> &Uuid;
     fn set_id(&mut self, id: Uuid);
+    fn get_health(&self) -> i32;
+    fn can_be_attacked(&self) -> bool;
+    fn get_team_uuid(&self) -> &Uuid;
+    fn remove_health(&mut self, damage: i8);
 }
 
-impl Debug for dyn BuyablePiece {
+impl Debug for dyn Consumable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -29,6 +33,7 @@ pub trait Piece {
     // can occupy a slot has coords,
     fn get_coord(&self) -> &Coord;
     fn get_uuid(&self) -> &Uuid;
+    fn get_team_uuid(&self) -> Option<&Uuid>;
     fn change_immune_state(&mut self, immune: bool);
     fn is_immune(&self) -> bool;
     fn get_on_base(&self) -> bool;
@@ -40,6 +45,7 @@ pub trait Piece {
     fn movable(&self) -> bool;
     fn can_attack(&self) -> bool;
     fn can_be_attacked(&self) -> bool;
+    fn to_attack(&self) -> Option<&dyn Attack>;
 }
 
 impl Debug for dyn Piece {
@@ -56,20 +62,21 @@ impl PartialEq for dyn Piece {
 
 pub trait Attack: Piece {
     // can attack if it has range, has a damage value, and is not on a base,
-    fn attack(&self, attacked: &mut dyn Attackable, grid: &IGrid) -> Result<(), Error>;
+    fn attack(&self, attacked: &mut dyn Consumable, grid: &IGrid) -> Result<(), Error>;
     // fn can_attack(&self, grid: &IGrid) -> bool;
     fn get_range(&self) -> i8;
     fn get_damage(&self) -> i8;
-
+    fn get_team_uuid(&self) -> &Uuid;
     // WWOT
     // This is important we need to take the piece and look
     // in its range for any pieces that are not of the same team
 }
 
-pub trait Attackable {
+pub trait Healable {
     // it has a health attribute and is not currently immune to attacks
-    fn can_be_attacked(&self) -> bool;
+    fn can_be_healed(&self) -> bool;
     fn get_uuid(&self) -> Uuid;
+    fn add_health(&mut self, health: i8);
 }
 
 pub trait Move: Piece {
@@ -96,8 +103,4 @@ pub trait CarryGold {
 
 pub trait Heal {
     fn heal(&self) -> i8;
-}
-
-pub trait Buyable {
-    fn cost(&self) -> i32;
 }

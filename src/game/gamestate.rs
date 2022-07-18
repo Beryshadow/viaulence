@@ -4,21 +4,19 @@ use std::fmt::Debug;
 use std::io::Error;
 
 use crate::grid::isometric_grid::IGrid;
-use crate::pieces::traits::{Buyable, BuyablePiece, Piece};
+use crate::pieces;
+use crate::pieces::traits::{Consumable, Piece};
 use crate::player::player::Player;
 
-pub fn start_new_game(player_count: i32, pieces_available: Vec<Box<dyn BuyablePiece>>) -> Game {
+pub fn start_new_game(player_count: i32, pieces_available: Vec<Box<dyn Consumable>>) -> Game {
     // create a new game
     let mut game = Game::from(player_count, pieces_available);
 
     // make the turn system
 
-    while game.get_gold() > 0 {
-        game.turn();
-    }
-
-    println!("this is game {:#?}", game);
-
+    // while game.get_gold() > 0 {
+    //     game.turn();
+    // }
     game
 }
 
@@ -29,7 +27,7 @@ pub struct Game {
     player_count: i32,
     turn: usize,
     gold_in_game: i32,
-    available_pieces: Vec<Box<dyn BuyablePiece>>,
+    available_pieces: Vec<Box<dyn Consumable>>,
 }
 
 impl Debug for Game {
@@ -49,7 +47,7 @@ impl<'a> Game {
             available_pieces: Vec::new(),
         }
     }
-    fn from(players: i32, pieces_available: Vec<Box<dyn BuyablePiece>>) -> Game {
+    fn from(players: i32, pieces_available: Vec<Box<dyn Consumable>>) -> Game {
         let mut player_vec = Vec::new();
         for _ in 0..players {
             let player = Player::new();
@@ -75,10 +73,23 @@ impl<'a> Game {
     fn get_gold(&self) -> i32 {
         self.gold_in_game
     }
-    fn turn(&mut self) -> Result<(), Error> {
+    pub fn turn(&mut self) -> Result<(), Error> {
         // get the current player
         let current_player = self.players.get(self.turn).unwrap();
         // check if the player can place a piece with his available coins,
+        if current_player.can_play(&self) {
+            // if he can, place a piece
+            if current_player.can_buy(&self) {
+                println!("player can buy");
+            }
+            if current_player.can_move(&self.grid) {
+                println!("player can move");
+            }
+            if current_player.can_attack(&self.grid) {
+                println!("player can attack");
+            }
+            println!("player can play");
+        }
         Ok(())
     }
     fn do_action_phase(&mut self) {
@@ -92,7 +103,7 @@ impl<'a> Game {
     pub fn get_grid_ref(&self) -> &IGrid {
         &self.grid
     }
-    pub fn lowest_costing_piece(&self) -> Option<&Box<dyn BuyablePiece>> {
+    pub fn lowest_costing_piece(&self) -> Option<&Box<dyn Consumable>> {
         let mut lowest_costing_piece = None;
         for piece in self.available_pieces.iter() {
             if lowest_costing_piece.is_none() {
@@ -102,5 +113,13 @@ impl<'a> Game {
             }
         }
         lowest_costing_piece
+    }
+    fn add_to_available_pieces(&mut self, piece: Box<dyn Consumable>) {
+        //convert the piece to a buyable piece
+        self.available_pieces.push(piece);
+    }
+    pub fn remove_piece(&mut self, piece: Box<dyn Consumable>) {
+        self.grid.remove_piece(piece.get_coord());
+        self.add_to_available_pieces(piece);
     }
 }

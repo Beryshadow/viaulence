@@ -1,18 +1,22 @@
 use uuid::Uuid;
 
 use crate::{
+    game::gamestate::{start_new_game, Game},
+    grid::isometric_grid::{Coord, IGrid},
     pieces::{
-        attack::in_range,
-        traits::{Attack, Move, Piece},
+        attack::{attack, in_range},
+        movement::can_move,
+        tokens::*,
+        traits::{Consumable, Piece},
         tree::populate_tree,
     },
-    player::player::Player,
-    *,
 };
 
 #[cfg(test)]
 #[test]
 fn test_player() {
+    use crate::player::player::Player;
+
     let mut player = Player::new();
     let piece = Scout::new(Uuid::new_v4());
     player.add_piece(Box::from(piece));
@@ -99,18 +103,20 @@ fn test_attack() {
     scout2.set_coords(Coord::from(8, 9));
     let mut scout3 = Scout::new(team_2);
     scout3.set_coords(Coord::from(10, 9));
+    let pieces_available: Vec<Box<(dyn Consumable + 'static)>> =
+        vec![Box::new(scout1), Box::new(scout2), Box::new(scout3)];
+    let mut game = start_new_game(2, pieces_available);
 
     let mut grid = IGrid::from(Coord::from(0, 0), Coord::from(20, 20));
     grid.add_piece(scout1);
-    println!("works until here");
-    let bobo = in_range(&scout1, &grid);
-    println!("this is bobo: {:?}", bobo);
+
     assert!(in_range(&scout1, &grid).len() == 0);
+
     grid.add_piece(scout2);
     grid.add_piece(scout3);
-
     assert_eq!(scout1.can_attack(), true);
-    let scout = Box::new(scout1) as Box<dyn Attack>;
-    let joe = in_range(&scout1, &grid).len();
-    assert!(in_range(&scout1, &grid).len() > 0);
+    assert!(in_range(&scout1, &grid).len() == 2);
+    let success = attack(&scout1, &mut scout2, &mut game);
+    println!("this is success: {:?}", success);
+    assert!(success.is_ok());
 }
