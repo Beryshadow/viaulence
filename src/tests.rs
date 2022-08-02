@@ -18,15 +18,15 @@ fn test_player() {
     use crate::player::player::Player;
 
     let mut player = Player::new();
-    let piece = Scout::new(Uuid::new_v4());
+    let piece = Scout::new();
     player.add_piece(Box::from(piece));
     assert_eq!(player.pieces().len(), 1);
 }
 #[test]
 fn test_grid() {
     let mut grid = IGrid::new();
-    let mut piece = Scout::new(Uuid::new_v4());
-    piece.set_coords(Coord::from(9, 9));
+    let mut piece = Scout::new();
+    piece.set_coords(Some(Coord::from(9, 9)));
     grid.add_piece(piece.clone());
     let coords = grid.get_coord(&piece);
     assert_eq!(coords, Some(Coord::from(9, 9)));
@@ -39,15 +39,15 @@ fn test_tree() {
     let team_1 = Uuid::new_v4();
     let team_2 = Uuid::new_v4();
 
-    grid.add_piece(GoldPot::new(Coord::from(0, 0)));
-    grid.add_piece(Scout::new(team_1));
-    grid.add_piece(Tank::new(team_2));
-    let medic = Medic::new(team_1);
-    let base = Base::new(team_2, Coord::from(0, 0));
-    let mut scout = Scout::new(team_2);
-    scout.set_coords(Coord::from(9, 9));
+    grid.add_piece(GoldPot::new());
+    grid.add_piece(Scout::new());
+    grid.add_piece(Tank::new());
+    let medic = Medic::new();
+    let base = Base::new();
+    let mut scout = Scout::new();
+    scout.set_coords(Some(Coord::from(9, 9)));
     grid.add_piece(medic);
-    grid.add_piece(Base::new(team_2, Coord::from(9, 9)));
+    grid.add_piece(Base::new());
     // grid.add_piece(Piece::Wall(Wall::new()), Coord::from(10, 9));
     // grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(8, 9));
     // grid.add_piece(Piece::Soldier(Soldier::new()), Coord::from(9, 8));
@@ -68,12 +68,12 @@ fn test_tree() {
 #[test]
 fn test_movement() {
     let team_1 = Uuid::new_v4();
-    let mut scout1 = Scout::new(team_1);
-    scout1.set_coords(Coord::from(9, 9));
-    let mut scout2 = Scout::new(team_1);
-    scout2.set_coords(Coord::from(8, 9));
-    let mut scout3 = Scout::new(team_1);
-    scout3.set_coords(Coord::from(10, 9));
+    let mut scout1 = Scout::new();
+    scout1.set_coords(Some(Coord::from(9, 9)));
+    let mut scout2 = Scout::new();
+    scout2.set_coords(Some(Coord::from(8, 9)));
+    let mut scout3 = Scout::new();
+    scout3.set_coords(Some(Coord::from(10, 9)));
 
     let mut grid = IGrid::from(Coord::from(0, 0), Coord::from(20, 20));
     grid.add_piece(scout1);
@@ -84,8 +84,8 @@ fn test_movement() {
     let scout = Box::new(scout1) as Box<dyn Piece>;
     assert_eq!(can_move(&scout, &grid), true);
 
-    let mut scout4 = Scout::new(Uuid::new_v4());
-    scout4.set_coords(Coord::from(9, 8));
+    let mut scout4 = Scout::new();
+    scout4.set_coords(Some(Coord::from(9, 8)));
 
     grid.add_piece(scout4);
 
@@ -97,12 +97,12 @@ fn test_movement() {
 fn test_attack() {
     let team_1 = Uuid::new_v4();
     let team_2 = Uuid::new_v4();
-    let mut scout1 = Scout::new(team_1);
-    scout1.set_coords(Coord::from(9, 9));
-    let mut scout2 = Scout::new(team_2);
-    scout2.set_coords(Coord::from(8, 9));
-    let mut scout3 = Scout::new(team_2);
-    scout3.set_coords(Coord::from(10, 9));
+    let mut scout1 = Scout::new();
+    scout1.set_coords(Some(Coord::from(9, 9)));
+    let mut scout2 = Scout::new();
+    scout2.set_coords(Some(Coord::from(8, 9)));
+    let mut scout3 = Scout::new();
+    scout3.set_coords(Some(Coord::from(10, 9)));
     let pieces_available: Vec<Box<(dyn Consumable + 'static)>> =
         vec![Box::new(scout1), Box::new(scout2), Box::new(scout3)];
     let mut game = start_new_game(2, pieces_available);

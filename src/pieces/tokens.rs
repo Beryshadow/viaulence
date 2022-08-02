@@ -16,9 +16,9 @@ we need to implement the appropriate traits for each piece
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Scout {
-    coord: Coord,
+    coord: Option<Coord>,
     uuid: uuid::Uuid,
-    team: uuid::Uuid,
+    team: Option<uuid::Uuid>,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -32,11 +32,11 @@ pub struct Scout {
 // for example a scout can attack, move, cary gold, be placed, die
 
 impl Scout {
-    pub fn new(team_uuid: Uuid) -> Scout {
+    pub fn new() -> Scout {
         Scout {
-            coord: Coord::new(),
+            coord: None,
             uuid: Uuid::new_v4(),
-            team: team_uuid,
+            team: None,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -47,20 +47,20 @@ impl Scout {
             cost: 300,
         }
     }
-    pub fn set_coords(&mut self, coord: Coord) {
-        self.coord = coord;
+    pub fn set_coords(&mut self, optional_coords: Option<Coord>) {
+        self.coord = optional_coords;
     }
 }
 
 impl Piece for Scout {
-    fn get_coord(&self) -> &Coord {
-        &self.coord
+    fn get_coord(&self) -> Option<&Coord> {
+        self.coord.as_ref()
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
     fn get_team_uuid(&self) -> Option<&Uuid> {
-        Some(&self.team)
+        self.team.as_ref()
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -131,8 +131,8 @@ impl Consumable for Scout {
         }
         true
     }
-    fn get_team_uuid(&self) -> &Uuid {
-        &self.team
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        self.team.as_ref()
     }
     fn remove_health(&mut self, damage: i8) {
         self.health -= damage;
@@ -160,16 +160,16 @@ impl Attack for Scout {
     fn get_damage(&self) -> i8 {
         self.attack
     }
-    fn get_team_uuid(&self) -> &Uuid {
-        &self.team
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        self.team.as_ref()
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Tank {
-    coord: Coord,
+    coord: Option<Coord>,
     uuid: uuid::Uuid,
-    team: uuid::Uuid,
+    team: Option<uuid::Uuid>,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -181,11 +181,11 @@ pub struct Tank {
 }
 
 impl Tank {
-    pub fn new(team_uuid: Uuid) -> Tank {
+    pub fn new() -> Tank {
         Tank {
-            coord: Coord::new(),
+            coord: None,
             uuid: Uuid::new_v4(),
-            team: team_uuid,
+            team: None,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -209,20 +209,20 @@ impl Attack for Tank {
     fn get_damage(&self) -> i8 {
         self.attack
     }
-    fn get_team_uuid(&self) -> &Uuid {
-        &self.team
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        self.team.as_ref()
     }
 }
 
 impl Piece for Tank {
-    fn get_coord(&self) -> &Coord {
-        &self.coord
+    fn get_coord(&self) -> Option<&Coord> {
+        self.coord.as_ref()
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
     fn get_team_uuid(&self) -> Option<&Uuid> {
-        Some(&self.team)
+        self.team.as_ref()
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -277,9 +277,9 @@ impl Move for Tank {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Soldier {
-    coord: Coord,
+    coord: Option<Coord>,
     uuid: uuid::Uuid,
-    team: uuid::Uuid,
+    team: Option<uuid::Uuid>,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -293,11 +293,11 @@ pub struct Soldier {
 }
 
 impl Soldier {
-    pub fn new(team_uuid: Uuid) -> Soldier {
+    pub fn new() -> Soldier {
         Soldier {
-            coord: Coord::new(),
+            coord: None,
             uuid: Uuid::new_v4(),
-            team: team_uuid,
+            team: None,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -323,20 +323,20 @@ impl Attack for Soldier {
     fn get_damage(&self) -> i8 {
         self.attack
     }
-    fn get_team_uuid(&self) -> &Uuid {
-        &self.team
+    fn get_team_uuid(&self) -> Option<&Uuid> {
+        self.team.as_ref()
     }
 }
 
 impl Piece for Soldier {
-    fn get_coord(&self) -> &Coord {
-        &self.coord
+    fn get_coord(&self) -> Option<&Coord> {
+        self.coord.as_ref()
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
     fn get_team_uuid(&self) -> Option<&Uuid> {
-        Some(&self.team)
+        self.team.as_ref()
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -390,9 +390,9 @@ impl Move for Soldier {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Medic {
-    coord: Coord,
+    coord: Option<Coord>,
     uuid: uuid::Uuid,
-    team: uuid::Uuid,
+    team: Option<uuid::Uuid>,
     immune: bool,
     base_under: bool,
     pot_under: bool,
@@ -402,11 +402,11 @@ pub struct Medic {
 }
 
 impl Medic {
-    pub fn new(team_uuid: Uuid) -> Medic {
+    pub fn new() -> Medic {
         Medic {
-            coord: Coord::new(),
+            coord: None,
             uuid: Uuid::new_v4(),
-            team: team_uuid,
+            team: None,
             immune: true,
             base_under: true,
             pot_under: false,
@@ -418,14 +418,14 @@ impl Medic {
 }
 
 impl Piece for Medic {
-    fn get_coord(&self) -> &Coord {
-        &self.coord
+    fn get_coord(&self) -> Option<&Coord> {
+        self.coord.as_ref()
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
     fn get_team_uuid(&self) -> Option<&Uuid> {
-        Some(&self.team)
+        self.team.as_ref()
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -478,19 +478,19 @@ impl Move for Medic {
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Wall {
-    coord: Coord,
+    coord: Option<Coord>,
     uuid: uuid::Uuid,
-    team: uuid::Uuid,
+    team: Option<uuid::Uuid>,
     immune: bool,
     health: i8,
 }
 
 impl Wall {
-    pub fn new(team_uuid: Uuid, coord: Coord) -> Wall {
+    pub fn new() -> Wall {
         Wall {
-            coord: coord,
+            coord: None,
             uuid: Uuid::new_v4(),
-            team: team_uuid,
+            team: None,
             immune: false,
             health: 4,
         }
@@ -498,14 +498,14 @@ impl Wall {
 }
 
 impl Piece for Wall {
-    fn get_coord(&self) -> &Coord {
-        &self.coord
+    fn get_coord(&self) -> Option<&Coord> {
+        self.coord.as_ref()
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
     fn get_team_uuid(&self) -> Option<&Uuid> {
-        Some(&self.team)
+        self.team.as_ref()
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -543,32 +543,32 @@ impl Piece for Wall {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct Base {
-    coord: Coord,
+    coord: Option<Coord>,
     uuid: uuid::Uuid,
-    team: uuid::Uuid,
+    team: Option<uuid::Uuid>,
     immune: bool,
 }
 
 impl Base {
-    pub fn new(team_uuid: Uuid, coord: Coord) -> Base {
+    pub fn new() -> Base {
         Base {
-            coord: coord,
+            coord: None,
             uuid: Uuid::new_v4(),
-            team: team_uuid,
+            team: None,
             immune: true,
         }
     }
 }
 
 impl Piece for Base {
-    fn get_coord(&self) -> &Coord {
-        &self.coord
+    fn get_coord(&self) -> Option<&Coord> {
+        self.coord.as_ref()
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid
     }
     fn get_team_uuid(&self) -> Option<&Uuid> {
-        Some(&self.team)
+        self.team.as_ref()
     }
     fn change_immune_state(&mut self, immune: bool) {
         self.immune = immune;
@@ -606,15 +606,15 @@ impl Piece for Base {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct GoldPot {
-    coord: Coord,
+    coord: Option<Coord>,
     uuid: uuid::Uuid,
     immune: bool,
 }
 
 impl GoldPot {
-    pub fn new(coord: Coord) -> GoldPot {
+    pub fn new() -> GoldPot {
         GoldPot {
-            coord: coord,
+            coord: None,
             uuid: Uuid::new_v4(),
             immune: true,
         }
@@ -622,8 +622,8 @@ impl GoldPot {
 }
 
 impl Piece for GoldPot {
-    fn get_coord(&self) -> &Coord {
-        &self.coord
+    fn get_coord(&self) -> Option<&Coord> {
+        self.coord.as_ref()
     }
     fn get_uuid(&self) -> &Uuid {
         &self.uuid

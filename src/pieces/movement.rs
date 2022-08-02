@@ -15,8 +15,8 @@ pub fn not_blocked<T>(movable: &T, grid: &IGrid) -> bool
 where
     T: Move,
 {
-    let mut tree = ThreeProngedTree::from(Available(*movable.get_coord()));
-    tree.populate_for_depth(grid, &mut vec![*movable.get_coord()], 1);
+    let mut tree = ThreeProngedTree::from(Available(*movable.get_coord().unwrap()));
+    tree.populate_for_depth(grid, &mut vec![*movable.get_coord().unwrap()], 1);
     // get the list of children
     let mut children = tree.get_list_of_children();
     // if the list is empty, then the piece can't move

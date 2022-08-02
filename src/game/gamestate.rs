@@ -5,7 +5,7 @@ use std::io::Error;
 
 use crate::grid::isometric_grid::IGrid;
 use crate::pieces;
-use crate::pieces::traits::{Consumable, Piece};
+use crate::pieces::traits::Consumable;
 use crate::player::player::Player;
 
 pub fn start_new_game(player_count: i32, pieces_available: Vec<Box<dyn Consumable>>) -> Game {
@@ -119,7 +119,7 @@ impl<'a> Game {
         self.available_pieces.push(piece);
     }
     pub fn remove_piece(&mut self, piece: Box<dyn Consumable>) {
-        self.grid.remove_piece(piece.get_coord());
+        self.grid.remove_piece(piece.get_coord().unwrap());
         self.add_to_available_pieces(piece);
     }
 }

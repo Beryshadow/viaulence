@@ -46,23 +46,23 @@ impl IGrid {
     {
         let coord = piece.get_coord();
         println!("piece is {:?}", piece);
-        if !self.grid_pieces.contains_key(coord) {
+        if !self.grid_pieces.contains_key(coord.unwrap()) {
             let piece = Box::from(piece);
-            self.grid_pieces.insert(*coord, piece);
+            self.grid_pieces.insert(*coord.unwrap(), piece);
         } else {
-            match self.grid_pieces.get(&coord) {
+            match self.grid_pieces.get(&coord.unwrap()) {
                 Some(GoldPot) => {
                     let piece = Box::new(piece);
-                    self.grid_pieces.insert(*coord, piece);
-                    let mut temp = self.grid_pieces.get_mut(&coord).unwrap().as_mut();
+                    self.grid_pieces.insert(*coord.unwrap(), piece);
+                    let mut temp = self.grid_pieces.get_mut(&coord.unwrap()).unwrap().as_mut();
                     temp.set_on_pot(true);
                     temp.set_on_base(false);
                     temp.change_immune_state(true);
                 }
                 Some(Base) => {
                     let piece = Box::new(piece);
-                    self.grid_pieces.insert(*coord, piece);
-                    let mut temp = self.grid_pieces.get_mut(&coord).unwrap().as_mut();
+                    self.grid_pieces.insert(*coord.unwrap(), piece);
+                    let mut temp = self.grid_pieces.get_mut(&coord.unwrap()).unwrap().as_mut();
                     temp.set_on_pot(false);
                     temp.set_on_base(true);
                     temp.change_immune_state(true);
@@ -163,7 +163,7 @@ impl IGrid {
     pub fn get_coord_ref(&self, coord: Coord) -> Option<&Coord> {
         let piece = self.grid_pieces.get(&coord);
         if piece.is_some() {
-            Some(piece.unwrap().get_coord())
+            Some(piece.unwrap().get_coord().unwrap())
         } else {
             None
         }

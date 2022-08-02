@@ -1,0 +1,12 @@
+c:\Users\berys\rust\viaulence\target\debug\deps\proc_macro2-a3f859d60b7e4e75.rmeta: C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\lib.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\marker.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\parse.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\detection.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\fallback.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\wrapper.rs
+
+c:\Users\berys\rust\viaulence\target\debug\deps\libproc_macro2-a3f859d60b7e4e75.rlib: C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\lib.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\marker.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\parse.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\detection.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\fallback.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\wrapper.rs
+
+c:\Users\berys\rust\viaulence\target\debug\deps\proc_macro2-a3f859d60b7e4e75.d: C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\lib.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\marker.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\parse.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\detection.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\fallback.rs C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\wrapper.rs
+
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\lib.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\marker.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\parse.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\detection.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\fallback.rs:
+C:\Users\berys\.cargo\registry\src\github.com-1ecc6299db9ec823\proc-macro2-1.0.40\src\wrapper.rs:
